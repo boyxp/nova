@@ -21,20 +21,18 @@ func Register(controller interface{}) bool {
 	}
 
 	//取得控制器名称
-	tmp := reflect.TypeOf(controller).String()
-	module := tmp
-	if strings.Contains(tmp, ".") {
-		module = tmp[strings.Index(tmp, ".")+1:]
-
+	module := reflect.TypeOf(controller).String()
+	if strings.Contains(module, ".") {
+		module = module[strings.Index(module, ".")+1:]
 	}
 
 	//遍历方法
-    for i:= 0; i < v.NumMethod(); i++ {
+  for i:= 0; i < v.NumMethod(); i++ {
     	method := v.Method(i)
     	action := v.Type().Method(i).Name
 
-		//遍历参数
-		params := make([]reflect.Type, 0, v.NumMethod())
+			//遍历参数
+			params := make([]reflect.Type, 0, v.NumMethod())
     	for j := 0; j < method.Type().NumIn(); j++ {
       		params = append(params, method.Type().In(j))
     	}
@@ -43,7 +41,7 @@ func Register(controller interface{}) bool {
     		routes[module] = make(map[string]Route)
     	}
 
-        routes[module][action] = Route{method,params}
+      routes[module][action] = Route{method,params}
 	}
 
 	return true
@@ -71,23 +69,23 @@ func Call(path string, args []string) bool {
 		return false
 	}
 
-	argv := make([]reflect.Value, 0, len(route.args))
-  	for i, t := range route.args {
+	argvs := make([]reflect.Value, 0, len(route.args))
+  for i, t := range route.args {
     	switch t.Kind() {
     		case reflect.Int:
-      			value, _ := strconv.Atoi(args[i])
-      			argv = append(argv, reflect.ValueOf(value))
+      									value, _ := strconv.Atoi(args[i])
+      									argvs     = append(argvs, reflect.ValueOf(value))
 
     		case reflect.String:
-      			argv = append(argv, reflect.ValueOf(args[i]))
+      									argvs = append(argvs, reflect.ValueOf(args[i]))
 
     		default:
       			fmt.Errorf("invalid arg type:%s", t.Kind())
       			return false
-    	}
+    		}
   	}
 
-    route.method.Call(argv)
+    route.method.Call(argvs)
 
     return true
 }
