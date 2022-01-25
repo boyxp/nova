@@ -1,7 +1,7 @@
 package controller
 
 import "fmt"
-import "hello/router"
+import "nova/router"
 
 func init() {
    router.Register(&Admin{})

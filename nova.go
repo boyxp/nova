@@ -4,10 +4,8 @@ import _ "nova/controller"
 import "nova/router"
 
 func main() {
-
-	match := router.Match("/Admin/Login1")
+	match := router.Match("/User/Login")
 	if match ==true {
-		router.Call("/Admin/Login1", []string{"aa","12"})
+		router.Call("/User/Login", []string{"lee","18"})
 	}
-
 }

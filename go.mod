@@ -1,3 +1,3 @@
-module hello
+module nova
 
 go 1.17
