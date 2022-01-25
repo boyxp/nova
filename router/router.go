@@ -12,6 +12,7 @@ type Route struct {
 
 var routes = make(map[string]map[string]Route)
 
+//注册控制器
 func Register(controller interface{}) bool {
 	v := reflect.ValueOf(controller)
 
@@ -47,6 +48,7 @@ func Register(controller interface{}) bool {
 	return true
 }
 
+//检查路由是否匹配
 func Match(path string) bool {
 	fields := strings.Split(path, "/")
 	if len(fields) < 3 {
@@ -58,6 +60,7 @@ func Match(path string) bool {
 	return ok
 }
 
+//调用路由方法
 func Call(path string, args []string) bool {
 	fields := strings.Split(path, "/")
 	if len(fields) < 3 {
@@ -89,5 +92,3 @@ func Call(path string, args []string) bool {
 
     return true
 }
-
-
