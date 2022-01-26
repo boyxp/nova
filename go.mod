@@ -1,4 +1,4 @@
-module nova
+module github.com/boyxp/nova
 
 go 1.17
 
