@@ -10,6 +10,7 @@ type Route struct {
   args   []reflect.Type
 }
 
+//路由规则
 var routes = make(map[string]map[string]Route)
 
 //注册控制器
@@ -27,12 +28,12 @@ func Register(controller interface{}) bool {
 		module = module[strings.Index(module, ".")+1:]
 	}
 
-	//遍历方法
+	//遍历控制器方法
   for i:= 0; i < v.NumMethod(); i++ {
     	method := v.Method(i)
     	action := v.Type().Method(i).Name
 
-			//遍历参数
+			//遍历方法参数取得参数类型
 			params := make([]reflect.Type, 0, v.NumMethod())
     	for j := 0; j < method.Type().NumIn(); j++ {
       		params = append(params, method.Type().In(j))
@@ -64,7 +65,7 @@ func Match(path string) bool {
 	return ok
 }
 
-//调用路由方法
+//匹配路由并调用控制器方法
 func Call(path string, args []string) interface{} {
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
@@ -80,19 +81,28 @@ func Call(path string, args []string) interface{} {
 		return false
 	}
 
+	//强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
   for i, t := range route.args {
     	switch t.Kind() {
-    		case reflect.Int:
-      									value, _ := strconv.Atoi(args[i])
-      									argvs     = append(argvs, reflect.ValueOf(value))
-
     		case reflect.String:
-      									argvs = append(argvs, reflect.ValueOf(args[i]))
+      											argvs = append(argvs, reflect.ValueOf(args[i]))
 
-    		default:
-      			fmt.Errorf("invalid arg type:%s", t.Kind())
-      			return false
+    		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64 :
+      											value, _ := strconv.Atoi(args[i])
+      											argvs     = append(argvs, reflect.ValueOf(value))
+
+    		case reflect.Bool :
+      											value, _ := strconv.ParseBool(args[i])
+      											argvs     = append(argvs, reflect.ValueOf(value))
+
+    		case reflect.Float32, reflect.Float64 :
+      											value, _ := strconv.ParseFloat(args[i])
+      											argvs     = append(argvs, reflect.ValueOf(value))
+
+    		default						:
+      										fmt.Errorf("invalid arg type:%s", t.Kind())
+      										return false
     		}
   	}
 
