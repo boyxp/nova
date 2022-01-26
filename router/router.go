@@ -50,6 +50,10 @@ func Register(controller interface{}) bool {
 
 //检查路由是否匹配
 func Match(path string) bool {
+	if strings.Contains(path, "?") {
+		path = path[0:strings.Index(path, "?")]
+	}
+
 	fields := strings.Split(path, "/")
 	if len(fields) < 3 {
 		return false
