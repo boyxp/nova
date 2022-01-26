@@ -97,7 +97,7 @@ func Call(path string, args []string) interface{} {
       											argvs     = append(argvs, reflect.ValueOf(value))
 
     		case reflect.Float32, reflect.Float64 :
-      											value, _ := strconv.ParseFloat(args[i])
+      											value, _ := strconv.ParseFloat(args[i], 64)
       											argvs     = append(argvs, reflect.ValueOf(value))
 
     		default						:
