@@ -3,9 +3,9 @@ package app
 import "log"
 import "os"
 import "net/http"
-import "nova/router"
-import "nova/request"
-import "nova/response"
+import "github.com/boyxp/nova/router"
+import "github.com/boyxp/nova/request"
+import "github.com/boyxp/nova/response"
 import "github.com/fvbock/endless"
 
 func New(port string) *App {
