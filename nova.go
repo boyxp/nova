@@ -1,11 +1,10 @@
 package main
 
+import "nova/app"
+import "nova/request"
+import "nova/response"
 import _ "nova/controller"
-import "nova/router"
 
 func main() {
-	match := router.Match("/User/Login")
-	if match ==true {
-		router.Call("/User/Login", []string{"lee","18"})
-	}
+	app.New(":8080").SetRequest(&request.Form{}).SetResponse(&response.Json{}).Run()
 }
