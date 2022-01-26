@@ -65,7 +65,7 @@ func Match(path string) bool {
 }
 
 //调用路由方法
-func Call(path string, args []string) bool {
+func Call(path string, args []string) interface{} {
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
 	}
@@ -96,7 +96,5 @@ func Call(path string, args []string) bool {
     		}
   	}
 
-    route.method.Call(argvs)
-
-    return true
+    return route.method.Call(argvs)
 }
