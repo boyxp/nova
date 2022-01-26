@@ -66,6 +66,10 @@ func Match(path string) bool {
 
 //调用路由方法
 func Call(path string, args []string) bool {
+	if strings.Contains(path, "?") {
+		path = path[0:strings.Index(path, "?")]
+	}
+
 	fields := strings.Split(path, "/")
 	if len(fields) < 3 {
 		return false
