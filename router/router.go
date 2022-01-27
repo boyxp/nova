@@ -83,6 +83,11 @@ func Call(path string, args []string) interface{} {
 		return false
 	}
 
+	//判断POST参数个数是否少于方法参数
+	if len(route.args)>len(args) {
+		return false
+	}
+
 	//强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
   for i, t := range route.args {
