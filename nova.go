@@ -7,6 +7,7 @@ import "runtime"
 import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
+import "github.com/boyxp/nova/exception"
 import "github.com/fvbock/endless"
 
 func Listen(port string) *App {
@@ -55,7 +56,8 @@ func (A *App) SetResponse(res response.Interface) *App {
 //异常捕获
 func Exception() {
         if err :=recover();err !=nil {
-                log.Println(err)
+        		exception := err.(*exception.Exception)
+        		log.Println("异常代码：", exception.GetCode(), "异常内容：", exception.GetMessage())
 
                 for i := 0; ; i++ {
                     pc, file, line, ok := runtime.Caller(i)
