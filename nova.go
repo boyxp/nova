@@ -8,7 +8,7 @@ import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
 import "github.com/fvbock/endless"
 
-func New(port string) *App {
+func Listen(port string) *App {
 	return &App{port, &request.Form{}, &response.Json{}}
 }
 
