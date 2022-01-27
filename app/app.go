@@ -31,7 +31,7 @@ func (A *App) Run() {
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	match := router.Match(r.RequestURI)
 	if match ==true {
-		res := router.Call(r.RequestURI, []string{"lee","18"})
+		res := router.Call(r.RequestURI, []string{"lee","1","aa","10.11","1"})
 		log.Println(res)
 	}
 }
