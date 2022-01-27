@@ -66,8 +66,6 @@ func Match(path string) bool {
 }
 
 //匹配路由并调用控制器方法
-var intMap  = map[reflect.Kind]int{reflect.Int:strconv.IntSize,  reflect.Int8:8,  reflect.Int16:16,  reflect.Int32:32,  reflect.Int64:64}
-var uintMap = map[reflect.Kind]int{reflect.Uint:strconv.IntSize, reflect.Uint8:8, reflect.Uint16:16, reflect.Uint32:32, reflect.Uint64:64}
 func Call(path string, args []string) interface{} {
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
@@ -97,24 +95,24 @@ func Call(path string, args []string) interface{} {
     		case reflect.String:
       											argvs = append(argvs, reflect.ValueOf(args[i]))
 
-    		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64 :
-      											value, _ := strconv.ParseInt(args[i], 10, intMap[kind])
+    		case reflect.Int64 :
+      											value, _ := strconv.ParseInt(args[i], 10, 64)
       											argvs     = append(argvs, reflect.ValueOf(value))
 
-    		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64 :
-      											value, _ := strconv.ParseUint(args[i], 10, uintMap[kind])
+    		case reflect.Uint64 :
+      											value, _ := strconv.ParseUint(args[i], 10, 64)
       											argvs     = append(argvs, reflect.ValueOf(value))
 
     		case reflect.Bool :
       											value, _ := strconv.ParseBool(args[i])
       											argvs     = append(argvs, reflect.ValueOf(value))
 
-    		case reflect.Float32, reflect.Float64 :
+    		case reflect.Float64 :
       											value, _ := strconv.ParseFloat(args[i], 64)
       											argvs     = append(argvs, reflect.ValueOf(value))
 
     		default											:
-    												log.Printf("invalid arg type:%s", t.Kind())
+    												log.Printf("Unsupported argument type:%s", t.Kind())
       											return false
     		}
   	}
