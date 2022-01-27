@@ -3,6 +3,7 @@ package nova
 import "log"
 import "os"
 import "net/http"
+import "runtime"
 import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
@@ -29,11 +30,16 @@ func (A *App) Run() {
 }
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer Exception();
+
 	match := router.Match(r.RequestURI)
 	if match ==true {
-		res := router.Call(r.RequestURI, []string{"lee","1","aa","10.11","1"})
-		log.Println(res)
+		params := A.Request.Parse(r)
+		result := router.Call(r.RequestURI, params)
+		log.Println(result)
 	}
+
+	//===渲染结果
 }
 
 func (A *App) SetRequest(req request.Interface) *App {
@@ -44,4 +50,19 @@ func (A *App) SetRequest(req request.Interface) *App {
 func (A *App) SetResponse(res response.Interface) *App {
 	A.Response = res
 	return A
+}
+
+//异常捕获
+func Exception() {
+        if err :=recover();err !=nil {
+                log.Println(err)
+
+                for i := 0; ; i++ {
+                    pc, file, line, ok := runtime.Caller(i)
+                    if !ok {
+                        break
+                    }
+                   	log.Println(pc, file, line)
+                }
+        }
 }
