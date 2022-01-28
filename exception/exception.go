@@ -5,14 +5,14 @@ func New(message string, code int64) {
 }
 
 type Exception struct {
-	message string
-	code int64
+	Message string `json:"message"`
+	Code int64 `json:"code"`
 }
 
 func (E *Exception) GetCode() int64 {
-	return E.code
+	return E.Code
 }
 
 func (E *Exception) GetMessage() string {
-	return E.message
+	return E.Message
 }
