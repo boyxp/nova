@@ -31,7 +31,7 @@ func (A *App) Run() {
 }
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer Exception();
+	defer Exception(A.Response,w);
 
 	match := router.Match(r.RequestURI)
 	if match ==true {
@@ -54,10 +54,14 @@ func (A *App) SetResponse(res response.Interface) *App {
 }
 
 //异常捕获
-func Exception() {
+func Exception(res response.Interface,w http.ResponseWriter) {
         if err :=recover();err !=nil {
-        		exception := err.(*exception.Exception)
-        		log.Println("异常代码：", exception.GetCode(), "异常内容：", exception.GetMessage())
+        		exception, ok := err.(*exception.Exception)
+        		if ok {
+        			res.Error(w,exception.GetMessage(), exception.GetCode())
+        			log.Println("异常代码：", exception.GetCode(), "异常内容：", exception.GetMessage())
+        			return
+        		}
 
                 for i := 0; ; i++ {
                     pc, file, line, ok := runtime.Caller(i)
