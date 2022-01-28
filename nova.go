@@ -56,12 +56,18 @@ func (A *App) SetResponse(res response.Interface) *App {
 //异常捕获
 func Exception(res response.Interface,w http.ResponseWriter) {
         if err :=recover();err !=nil {
+        		//断言逻辑异常直接抛出给用户
         		exception, ok := err.(*exception.Exception)
         		if ok {
         			res.Error(w,exception.GetMessage(), exception.GetCode())
-        			log.Println("异常代码：", exception.GetCode(), "异常内容：", exception.GetMessage())
+        			log.Println("逻辑异常代码：", exception.GetCode(), "逻辑异常内容：", exception.GetMessage())
         			return
         		}
+
+        		//系统异常写入日志但不暴露给用户真实错误原因
+        		log.Println("系统异常代码：-100","系统异常内容：", err)
+
+        		res.Error(w,"系统异常请联系管理员", -100)
 
                 for i := 0; ; i++ {
                     pc, file, line, ok := runtime.Caller(i)
