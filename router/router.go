@@ -90,8 +90,6 @@ func Call(path string, args []string) interface{} {
 	argvs := make([]reflect.Value, 0, len(route.args))
   for i:=0;i<len(route.args);i++ {
 
-log.Println(route.args[i].Kind(), args[i])
-
     	switch route.args[i].Kind() {
     		case reflect.String:
       											argvs = append(argvs, reflect.ValueOf(args[i]))
