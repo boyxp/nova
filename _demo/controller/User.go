@@ -10,7 +10,9 @@ func init() {
 
 type User struct {}
 func (C *User) Login(name string, age uint64, check bool, balance float64, num int64) string {
-	if age<18 { 
+	fmt.Println(age)
+
+	if age<18 {
 		exception.New("年龄最小18岁", 101)
 	}
 
