@@ -116,5 +116,10 @@ func Call(path string, args []string) interface{} {
     		}
   	}
 
-    return route.method.Call(argvs)
+    result := route.method.Call(argvs)
+    if len(result) == 0 {
+    	return nil
+    }
+
+    return result[0].Interface()
 }
