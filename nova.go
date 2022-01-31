@@ -31,7 +31,7 @@ func (A *App) Run() {
 }
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer Exception(A.Response,w);
+	defer A.Catch(w);
 
 	match := router.Match(r.RequestURI)
 	if match != true {
@@ -54,18 +54,19 @@ func (A *App) SetResponse(res response.Interface) *App {
 }
 
 //异常捕获
-func Exception(res response.Interface,w http.ResponseWriter) {
+func (A *App) Catch(w http.ResponseWriter) {
         if err :=recover();err !=nil {
         		//断言逻辑异常直接抛出给用户
         		exception, ok := err.(*exception.Exception)
         		if ok {
-        			res.Error(w,exception.GetMessage(), exception.GetCode())
+        			A.Response.Error(w,exception.GetMessage(), exception.GetCode())
+
         			log.Println("逻辑异常代码：", exception.GetCode(), "逻辑异常内容：", exception.GetMessage())
         			return
         		}
 
-        		//返回用户模糊提示
-        		res.Error(w,"系统异常请联系管理员", -100)
+        		//其他异常返回用户模糊提示
+        		A.Response.Error(w,"系统异常请联系管理员", -100)
 
         		//写入精确异常日志
         		log.Println("系统异常代码：-100","系统异常内容：", err)
