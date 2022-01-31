@@ -10,15 +10,16 @@ type Json struct {
 }
 
 func (J *Json) Render(w http.ResponseWriter, result interface{}) {
+	json, err := json.Marshal(result)
 
+	if err != nil {
+        fmt.Fprintf(w, "{\"message\":\"%v\",\"code\":0}", err)
+        return
+    }
+
+	fmt.Fprintf(w, string(json))
 }
 
 func (J *Json) Error(w http.ResponseWriter,message string, code int64) {
-	res := &exception.Exception{message,code}
-	json, err := json.Marshal(res)
-	if err != nil {
-        fmt.Fprintf(w, "{\"message\":\"%v\",\"code\":0}", err)
-    } else {
-		fmt.Fprintf(w, string(json))
-	}
+	J.Render(w, &exception.Exception{message,code})
 }
