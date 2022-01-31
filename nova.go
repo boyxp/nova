@@ -32,15 +32,12 @@ func (A *App) Run() {
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer Exception(A.Response,w);
-
 	match := router.Match(r.RequestURI)
 	if match ==true {
-		params := A.Request.Parse(r)
-		result := router.Call(r.RequestURI, params)
-		log.Println(result)
+			params := A.Request.Parse(r)
+			result := router.Call(r.RequestURI, params)
+			log.Println(result)
 	}
-
-	//===渲染结果
 }
 
 func (A *App) SetRequest(req request.Interface) *App {
