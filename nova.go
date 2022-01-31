@@ -64,10 +64,11 @@ func Exception(res response.Interface,w http.ResponseWriter) {
         			return
         		}
 
-        		//系统异常写入日志但不暴露给用户真实错误原因
-        		log.Println("系统异常代码：-100","系统异常内容：", err)
-
+        		//返回用户模糊提示
         		res.Error(w,"系统异常请联系管理员", -100)
+
+        		//写入精确异常日志
+        		log.Println("系统异常代码：-100","系统异常内容：", err)
 
                 for i := 0; ; i++ {
                     pc, file, line, ok := runtime.Caller(i)
