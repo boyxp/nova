@@ -20,7 +20,24 @@ func (C *User) Login(name string, age uint64, check bool, balance float64, num i
 		panic("年龄参数异常")
 	}
 
-	return map[string]interface{}{"Name":name}
+	//返回字符串
+	//return name
+
+	//返回int64
+	//return balance
+
+	//返回布尔值
+	//return check
+
+	//返回切片
+	//return []string{name,name,name}
+
+	//返回map
+	//return map[string]interface{}{"Name":name,"Age":age}
+
+	//返回复杂结果集
+	list := []interface{}{map[string]interface{}{"Name":name,"Age":age},map[string]interface{}{"Name":name,"Age":age}}
+	return map[string]interface{}{"total":len(list),"list":list}
 }
 
 func (C *User) Logout() {
