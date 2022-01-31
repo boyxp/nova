@@ -88,10 +88,11 @@ func Call(path string, args []string) interface{} {
 
 	//强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
-  for i, t := range route.args {
-  		kind := t.Kind()
+  for i:=0;i<len(route.args);i++ {
 
-    	switch kind {
+log.Println(route.args[i].Kind(), args[i])
+
+    	switch route.args[i].Kind() {
     		case reflect.String:
       											argvs = append(argvs, reflect.ValueOf(args[i]))
 
@@ -112,7 +113,7 @@ func Call(path string, args []string) interface{} {
       											argvs     = append(argvs, reflect.ValueOf(value))
 
     		default											:
-    												log.Printf("Unsupported argument type:%s", t.Kind())
+    												log.Printf("Unsupported argument type:%s", route.args[i].Kind())
       											return false
     		}
   	}
