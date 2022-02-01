@@ -8,6 +8,7 @@ import "runtime"
 import "os"
 import "io/ioutil"
 import "regexp"
+import "github.com/boyxp/nova/exception"
 
 type Route struct {
   method reflect.Value
@@ -136,7 +137,7 @@ func Match(path string) bool {
 }
 
 //匹配路由并调用控制器方法
-func Invoke(path string, args []string) interface{} {
+func Invoke(path string, args map[string]string) interface{} {
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
 	}
@@ -151,60 +152,61 @@ func Invoke(path string, args []string) interface{} {
 		return false
 	}
 
-	//判断POST参数个数是否少于方法参数
-	if len(route.args)>len(args) {
-		return false
-	}
-
-	//强制转换参数类型
+	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
-  for i:=0;i<len(route.args);i++ {
+  for i:=0;i<len(route.names);i++ {
+
+  		name      := route.names[i]
+  		param, ok := args[name]
+  		if ok==false {
+					exception.New("参数缺失:"+name, 100)
+  		}
 
     	switch route.args[i].Kind() {
     		case reflect.String :
-      											 argvs = append(argvs, reflect.ValueOf(args[i]))
+      											 argvs = append(argvs, reflect.ValueOf(param))
 
       	case reflect.Int    :
-      											 value, _ := strconv.Atoi(args[i])
+      											 value, _ := strconv.Atoi(param)
         										 argvs     = append(argvs, reflect.ValueOf(value))
     		case reflect.Int8   :
-      											 value, _ := strconv.ParseInt(args[i], 10, 8)
+      											 value, _ := strconv.ParseInt(param, 10, 8)
       											 argvs     = append(argvs, reflect.ValueOf(int8(value)))
     		case reflect.Int16  :
-      											 value, _ := strconv.ParseInt(args[i], 10, 16)
+      											 value, _ := strconv.ParseInt(param, 10, 16)
       											 argvs     = append(argvs, reflect.ValueOf(int16(value)))
     		case reflect.Int32  :
-      											 value, _ := strconv.ParseInt(args[i], 10, 32)
+      											 value, _ := strconv.ParseInt(param, 10, 32)
       											 argvs     = append(argvs, reflect.ValueOf(int32(value)))
     		case reflect.Int64  :
-      											 value, _ := strconv.ParseInt(args[i], 10, 64)
+      											 value, _ := strconv.ParseInt(param, 10, 64)
       											 argvs     = append(argvs, reflect.ValueOf(value))
 
       	case reflect.Uint   :
-      											 value, _ := strconv.ParseUint(args[i], 10, 32)
+      											 value, _ := strconv.ParseUint(param, 10, 32)
       											 argvs     = append(argvs, reflect.ValueOf(uint(value)))
     		case reflect.Uint8  :
-      											 value, _ := strconv.ParseUint(args[i], 10, 8)
+      											 value, _ := strconv.ParseUint(param, 10, 8)
       											 argvs     = append(argvs, reflect.ValueOf(uint8(value)))
       	case reflect.Uint16 :
-      											 value, _ := strconv.ParseUint(args[i], 10, 16)
+      											 value, _ := strconv.ParseUint(param, 10, 16)
       											 argvs     = append(argvs, reflect.ValueOf(uint16(value)))
       	case reflect.Uint32 :
-      											 value, _ := strconv.ParseUint(args[i], 10, 32)
+      											 value, _ := strconv.ParseUint(param, 10, 32)
       											 argvs     = append(argvs, reflect.ValueOf(uint32(value)))
     		case reflect.Uint64 :
-      											 value, _ := strconv.ParseUint(args[i], 10, 64)
+      											 value, _ := strconv.ParseUint(param, 10, 64)
       											 argvs     = append(argvs, reflect.ValueOf(value))
 
     		case reflect.Bool   :
-      											 value, _ := strconv.ParseBool(args[i])
+      											 value, _ := strconv.ParseBool(param)
       											 argvs     = append(argvs, reflect.ValueOf(value))
 
 				case reflect.Float32:
-        										 value, _ := strconv.ParseFloat(args[i], 32)
+        										 value, _ := strconv.ParseFloat(param, 32)
         										 argvs     = append(argvs, reflect.ValueOf(float32(value)))
     		case reflect.Float64:
-      											 value, _ := strconv.ParseFloat(args[i], 64)
+      											 value, _ := strconv.ParseFloat(param, 64)
       											 argvs     = append(argvs, reflect.ValueOf(value))
 
     		default							:
