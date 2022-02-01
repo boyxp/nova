@@ -4,6 +4,10 @@ import "reflect"
 import "strings"
 import "log"
 import "strconv"
+import "runtime"
+import "os"
+import "io/ioutil"
+import "regexp"
 
 type Route struct {
   method reflect.Value
@@ -15,6 +19,15 @@ var routes = make(map[string]map[string]Route)
 
 //注册控制器
 func Register(controller interface{}) bool {
+	//取得控制器路径
+  _, file, _, ok := runtime.Caller(1)
+  if !ok {
+      return false
+  }
+  scan(file)
+
+
+
 	v := reflect.ValueOf(controller)
 
 	//非控制器或无方法则直接返回
@@ -47,6 +60,60 @@ func Register(controller interface{}) bool {
 	}
 
 	return true
+}
+
+//扫描控制器方法
+func scan(path string) {
+	 //读取控制器源码
+	 file, err := os.Open(path)
+   if err != nil {
+      panic(err)
+   }
+
+   defer file.Close()
+
+   content, err := ioutil.ReadAll(file)
+   if err != nil {
+      panic(err)
+   }
+
+
+    //匹配控制器方法和参数
+    reg := regexp.MustCompile(`func\s*\(.+\)\s*([A-Z][A-Za-z]+)\s*\((.*)\)`)
+    if reg == nil {
+        log.Println("MustCompile err")
+        return
+    }
+
+
+    maps   := map[string][]string{}
+    result := reg.FindAllStringSubmatch(string(content), -1)
+    for _, match := range result {
+    		action := match[1]
+    	  args   := strings.TrimSpace(match[2])
+
+    		if len(args)==0 {
+    				maps[action] = []string{}
+    		} else {
+    			  sets  := []string{}
+    				pairs := strings.Split(args, ",")
+						for i:=0;i<len(pairs);i++ {
+							pairs[i] = strings.TrimSpace(pairs[i])
+							pos := strings.Index(pairs[i], " ")
+							if pos > -1 {
+							  pairs[i] = pairs[i][0:pos]
+						  }
+
+						  sets = append(sets, pairs[i])
+log.Println(pairs[i])
+							
+						}
+
+						maps[action] = sets
+    		}
+
+        log.Println("text[1] = ", match[0], match[1], match[2])
+    }
 }
 
 //检查路由是否匹配
