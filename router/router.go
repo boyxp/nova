@@ -12,6 +12,7 @@ import "regexp"
 type Route struct {
   method reflect.Value
   args   []reflect.Type
+  names  []string
 }
 
 //路由规则
@@ -24,10 +25,10 @@ func Register(controller interface{}) bool {
   if !ok {
       return false
   }
-  scan(file)
+  maps := scan(file)
 
 
-
+  //反射控制器
 	v := reflect.ValueOf(controller)
 
 	//非控制器或无方法则直接返回
@@ -56,14 +57,20 @@ func Register(controller interface{}) bool {
     		routes[module] = make(map[string]Route)
     	}
 
-      routes[module][action] = Route{method,params}
+    	//判断是否有参数名称
+			names, ok := maps[action]
+    	if !ok {
+        names = []string{}
+      }
+
+      routes[module][action] = Route{method,params, names}
 	}
 
 	return true
 }
 
 //扫描控制器方法
-func scan(path string) {
+func scan(path string) map[string][]string {
 	 //读取控制器源码
 	 file, err := os.Open(path)
    if err != nil {
@@ -81,10 +88,8 @@ func scan(path string) {
     //匹配控制器方法和参数
     reg := regexp.MustCompile(`func\s*\(.+\)\s*([A-Z][A-Za-z]+)\s*\((.*)\)`)
     if reg == nil {
-        log.Println("MustCompile err")
-        return
+        panic("MustCompile err")
     }
-
 
     maps   := map[string][]string{}
     result := reg.FindAllStringSubmatch(string(content), -1)
@@ -105,15 +110,13 @@ func scan(path string) {
 						  }
 
 						  sets = append(sets, pairs[i])
-log.Println(pairs[i])
-							
 						}
 
 						maps[action] = sets
     		}
-
-        log.Println("text[1] = ", match[0], match[1], match[2])
     }
+
+    return maps
 }
 
 //检查路由是否匹配
