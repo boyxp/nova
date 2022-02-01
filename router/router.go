@@ -91,28 +91,55 @@ func Call(path string, args []string) interface{} {
   for i:=0;i<len(route.args);i++ {
 
     	switch route.args[i].Kind() {
-    		case reflect.String:
-      											argvs = append(argvs, reflect.ValueOf(args[i]))
+    		case reflect.String :
+      											 argvs = append(argvs, reflect.ValueOf(args[i]))
 
-    		case reflect.Int64 :
-      											value, _ := strconv.ParseInt(args[i], 10, 64)
-      											argvs     = append(argvs, reflect.ValueOf(value))
+      	case reflect.Int    :
+      											 value, _ := strconv.Atoi(args[i])
+        										 argvs     = append(argvs, reflect.ValueOf(value))
+    		case reflect.Int8   :
+      											 value, _ := strconv.ParseInt(args[i], 10, 8)
+      											 argvs     = append(argvs, reflect.ValueOf(int8(value)))
+    		case reflect.Int16  :
+      											 value, _ := strconv.ParseInt(args[i], 10, 16)
+      											 argvs     = append(argvs, reflect.ValueOf(int16(value)))
+    		case reflect.Int32  :
+      											 value, _ := strconv.ParseInt(args[i], 10, 32)
+      											 argvs     = append(argvs, reflect.ValueOf(int32(value)))
+    		case reflect.Int64  :
+      											 value, _ := strconv.ParseInt(args[i], 10, 64)
+      											 argvs     = append(argvs, reflect.ValueOf(value))
 
+      	case reflect.Uint   :
+      											 value, _ := strconv.ParseUint(args[i], 10, 32)
+      											 argvs     = append(argvs, reflect.ValueOf(uint(value)))
+    		case reflect.Uint8  :
+      											 value, _ := strconv.ParseUint(args[i], 10, 8)
+      											 argvs     = append(argvs, reflect.ValueOf(uint8(value)))
+      	case reflect.Uint16 :
+      											 value, _ := strconv.ParseUint(args[i], 10, 16)
+      											 argvs     = append(argvs, reflect.ValueOf(uint16(value)))
+      	case reflect.Uint32 :
+      											 value, _ := strconv.ParseUint(args[i], 10, 32)
+      											 argvs     = append(argvs, reflect.ValueOf(uint32(value)))
     		case reflect.Uint64 :
-      											value, _ := strconv.ParseUint(args[i], 10, 64)
-      											argvs     = append(argvs, reflect.ValueOf(value))
+      											 value, _ := strconv.ParseUint(args[i], 10, 64)
+      											 argvs     = append(argvs, reflect.ValueOf(value))
 
-    		case reflect.Bool :
-      											value, _ := strconv.ParseBool(args[i])
-      											argvs     = append(argvs, reflect.ValueOf(value))
+    		case reflect.Bool   :
+      											 value, _ := strconv.ParseBool(args[i])
+      											 argvs     = append(argvs, reflect.ValueOf(value))
 
-    		case reflect.Float64 :
-      											value, _ := strconv.ParseFloat(args[i], 64)
-      											argvs     = append(argvs, reflect.ValueOf(value))
+				case reflect.Float32:
+        										 value, _ := strconv.ParseFloat(args[i], 32)
+        										 argvs     = append(argvs, reflect.ValueOf(float32(value)))
+    		case reflect.Float64:
+      											 value, _ := strconv.ParseFloat(args[i], 64)
+      											 argvs     = append(argvs, reflect.ValueOf(value))
 
-    		default											:
-    												log.Printf("Unsupported argument type:%s", route.args[i].Kind())
-      											return false
+    		default							:
+    												 log.Printf("Unsupported argument type:%s", route.args[i].Kind())
+      											 return false
     		}
   	}
 
