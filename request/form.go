@@ -6,8 +6,8 @@ import "strings"
 
 type Form struct {}
 
-func (F *Form) Parse(r *http.Request)[]string {
-	params := []string{}
+func (F *Form) Parse(r *http.Request)map[string]string {
+	params := map[string]string{}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -17,10 +17,10 @@ func (F *Form) Parse(r *http.Request)[]string {
 	pairs := strings.Split(string(body), "&")
 
 	for i:=0;i<len(pairs);i++ {
-		pos := strings.Index(pairs[i], "=")+1
-		val := pairs[i][pos:]
-
-		params = append(params, val)
+		pos := strings.Index(pairs[i], "=")
+		key := pairs[i][0:pos]
+		val := pairs[i][pos+1:]
+		params[key] = val
 	}
 
 	return params
