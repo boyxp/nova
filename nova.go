@@ -39,7 +39,7 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := A.Request.Parse(r)
-	result := router.Call(r.RequestURI, params)
+	result := router.Invoke(r.RequestURI, params)
 	if result != nil {
 		A.Response.Render(w, result)
 	}

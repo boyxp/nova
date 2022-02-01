@@ -66,7 +66,7 @@ func Match(path string) bool {
 }
 
 //匹配路由并调用控制器方法
-func Call(path string, args []string) interface{} {
+func Invoke(path string, args []string) interface{} {
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
 	}
