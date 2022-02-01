@@ -17,6 +17,7 @@ func (J *Json) Render(w http.ResponseWriter, result interface{}) {
         return
     }
 
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, string(json))
 }
 
