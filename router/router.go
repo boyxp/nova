@@ -64,6 +64,11 @@ func Register(controller interface{}) bool {
         names = []string{}
       }
 
+      //判断参数一致
+      if len(params) != len(names) {
+      	panic(module+":"+action+"参数匹配失败");
+      }
+
       routes[module][action] = Route{method,params, names}
 	}
 
@@ -87,7 +92,7 @@ func scan(path string) map[string][]string {
 
 
     //匹配控制器方法和参数
-    reg := regexp.MustCompile(`func\s*\(.+\)\s*([A-Z][A-Za-z]+)\s*\((.*)\)`)
+    reg := regexp.MustCompile(`func\s*\(.+\)\s*([A-Z][A-Za-z0-9_]+)\s*\((.*)\)`)
     if reg == nil {
         panic("MustCompile err")
     }
