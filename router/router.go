@@ -26,8 +26,6 @@ func Register(controller interface{}) bool {
   if !ok {
       return false
   }
-  maps := scan(file)
-
 
   //反射控制器
 	v := reflect.ValueOf(controller)
@@ -42,6 +40,9 @@ func Register(controller interface{}) bool {
 	if strings.Contains(module, ".") {
 		module = module[strings.Index(module, ".")+1:]
 	}
+
+  maps := scan(file, module)
+
 
 	//遍历控制器方法
   for i:= 0; i < v.NumMethod(); i++ {
@@ -76,7 +77,7 @@ func Register(controller interface{}) bool {
 }
 
 //扫描控制器方法
-func scan(path string) map[string][]string {
+func scan(path string, module string) map[string][]string {
 	 //读取控制器源码
 	 file, err := os.Open(path)
    if err != nil {
@@ -92,7 +93,7 @@ func scan(path string) map[string][]string {
 
 
     //匹配控制器方法和参数
-    reg := regexp.MustCompile(`func\s*\(.+\)\s*([A-Z][A-Za-z0-9_]+)\s*\((.*)\)`)
+    reg := regexp.MustCompile(`func\s*\(.+`+module+`\s*\)\s*([A-Z][A-Za-z0-9_]+)\s*\((.*)\)`)
     if reg == nil {
         panic("MustCompile err")
     }
