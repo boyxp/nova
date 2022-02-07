@@ -74,11 +74,13 @@ func (A *App) Catch(w http.ResponseWriter) {
         		log.Println("系统异常代码：-100","系统异常内容：", err)
 
                 for i := 0; ; i++ {
-                    pc, file, line, ok := runtime.Caller(i)
+                    _, file, line, ok := runtime.Caller(i)
                     if !ok {
                         break
                     }
-                   	log.Println(pc, file, line)
+                   	log.Println(i, file, line)
                 }
+
+                log.Println("\n")
         }
 }
