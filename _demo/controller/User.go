@@ -1,7 +1,9 @@
 package controller
 
+import "os"
 import "fmt"
 import "log"
+import "net/http"
 import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/exception"
 
@@ -10,16 +12,49 @@ func init() {
 }
 
 type User struct {}
-func (C *User) Login(name string, age uint64, check bool, balance float64, num int64) interface{} {
+func (C *User) Login(name string, age uint64, check bool, balance float64, num int64, portrait string) interface{} {
 	log.Println("姓名：",name,"年龄：",age,"检查：",check,"余额：",balance,"数量：",num)
 
 	if age<18 {
-		exception.New("年龄最小18岁", 101)
+		//逻辑异常
+		exception.New("年龄最小18岁", 1001)
 	}
 
 	if age > 100 {
+		//非逻辑异常
 		panic("年龄参数异常")
 	}
+
+	//文件大小检查
+	file, err := os.Stat(portrait)
+	if err == nil {
+		if file.Size() > 1024000 {
+			exception.New("头像不得大于1m", 1002)
+		}
+	}
+
+
+
+	//文件格式检查
+	fp, err := os.Open(portrait)
+	if err != nil {
+			panic(err)
+	}
+	defer fp.Close()
+
+	buffer := make([]byte, 512)
+	_, err1 := fp.Read(buffer)
+	if err1 != nil {
+		panic(err1)
+	}
+
+	contentType := http.DetectContentType(buffer)
+
+	if contentType!="image/jpeg" {
+		exception.New("头像不是图片格式", 1003)
+	}
+
+
 
 	//返回字符串
 	//return name
@@ -37,7 +72,7 @@ func (C *User) Login(name string, age uint64, check bool, balance float64, num i
 	//return map[string]interface{}{"Name":name,"Age":age}
 
 	//返回复杂结果集
-	list := []interface{}{map[string]interface{}{"Name":name,"Age":age},map[string]interface{}{"Name":name,"Age":age}}
+	list := []interface{}{map[string]interface{}{"Name":name,"Age":age,"Portrait":portrait},map[string]interface{}{"Name":name,"Age":age,"Portrait":portrait}}
 	return map[string]interface{}{"total":len(list),"list":list}
 }
 
