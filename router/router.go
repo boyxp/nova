@@ -22,12 +22,12 @@ var routes = make(map[string]map[string]Route)
 //注册控制器
 func Register(controller interface{}) bool {
 	//取得控制器路径
-  _, file, _, ok := runtime.Caller(1)
-  if !ok {
+    _, file, _, ok := runtime.Caller(1)
+    if !ok {
       return false
-  }
+    }
 
-  //反射控制器
+    //反射控制器
 	v := reflect.ValueOf(controller)
 
 	//非控制器或无方法则直接返回
@@ -41,16 +41,16 @@ func Register(controller interface{}) bool {
 		module = module[strings.Index(module, ".")+1:]
 	}
 
-  maps := scan(file, module)
+    maps := scan(file, module)
 
 
 	//遍历控制器方法
-  for i:= 0; i < v.NumMethod(); i++ {
+    for i:= 0; i < v.NumMethod(); i++ {
     	method := v.Method(i)
     	action := v.Type().Method(i).Name
 
-			//遍历方法参数取得参数类型
-			params := make([]reflect.Type, 0, v.NumMethod())
+		//遍历方法参数取得参数类型
+		params := make([]reflect.Type, 0, v.NumMethod())
     	for j := 0; j < method.Type().NumIn(); j++ {
       		params = append(params, method.Type().In(j))
     	}
@@ -60,17 +60,17 @@ func Register(controller interface{}) bool {
     	}
 
     	//判断是否有参数名称
-			names, ok := maps[action]
+		names, ok := maps[action]
     	if !ok {
-        names = []string{}
-      }
+           names = []string{}
+        }
 
-      //判断参数一致
-      if len(params) != len(names) {
-      	panic(module+":"+action+"参数匹配失败");
-      }
+        //判断参数一致
+        if len(params) != len(names) {
+      	    panic(module+":"+action+"参数匹配失败");
+        }
 
-      routes[module][action] = Route{method,params, names}
+        routes[module][action] = Route{method,params, names}
 	}
 
 	return true
@@ -79,17 +79,17 @@ func Register(controller interface{}) bool {
 //扫描控制器方法
 func scan(path string, module string) map[string][]string {
 	 //读取控制器源码
-	 file, err := os.Open(path)
-   if err != nil {
+	file, err := os.Open(path)
+    if err != nil {
       panic(err)
-   }
+    }
 
-   defer file.Close()
+   	defer file.Close()
 
-   content, err := ioutil.ReadAll(file)
-   if err != nil {
-      panic(err)
-   }
+   	content, err := ioutil.ReadAll(file)
+   	if err != nil {
+    	panic(err)
+   	}
 
 
     //匹配控制器方法和参数
@@ -101,26 +101,26 @@ func scan(path string, module string) map[string][]string {
     maps   := map[string][]string{}
     result := reg.FindAllStringSubmatch(string(content), -1)
     for _, match := range result {
-    		action := match[1]
-    	  args   := strings.TrimSpace(match[2])
+    	action := match[1]
+    	args   := strings.TrimSpace(match[2])
 
-    		if len(args)==0 {
-    				maps[action] = []string{}
-    		} else {
-    			  sets  := []string{}
-    				pairs := strings.Split(args, ",")
-						for i:=0;i<len(pairs);i++ {
-							pairs[i] = strings.TrimSpace(pairs[i])
-							pos := strings.Index(pairs[i], " ")
-							if pos > -1 {
-							  pairs[i] = pairs[i][0:pos]
-						  }
+    	if len(args)==0 {
+    		maps[action] = []string{}
+    	} else {
+    		sets  := []string{}
+    		pairs := strings.Split(args, ",")
+			for i:=0;i<len(pairs);i++ {
+				pairs[i] = strings.TrimSpace(pairs[i])
+				pos := strings.Index(pairs[i], " ")
+				if pos > -1 {
+					pairs[i] = pairs[i][0:pos]
+				}
 
-						  sets = append(sets, pairs[i])
-						}
+				sets = append(sets, pairs[i])
+			}
 
-						maps[action] = sets
-    		}
+			maps[action] = sets
+    	}
     }
 
     return maps
@@ -160,65 +160,65 @@ func Invoke(path string, args map[string]string) interface{} {
 
 	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
-  for i:=0;i<len(route.names);i++ {
+    for i:=0;i<len(route.names);i++ {
 
   		name      := route.names[i]
   		param, ok := args[name]
   		if ok==false {
-					exception.New("参数缺失:"+name, 100)
+			exception.New("参数缺失:"+name, 100)
   		}
 
     	switch route.args[i].Kind() {
     		case reflect.String :
-      											 argvs = append(argvs, reflect.ValueOf(param))
+      								argvs = append(argvs, reflect.ValueOf(param))
 
-      	case reflect.Int    :
-      											 value, _ := strconv.Atoi(param)
-        										 argvs     = append(argvs, reflect.ValueOf(value))
+      	    case reflect.Int    :
+      								value, _ := strconv.Atoi(param)
+        							argvs     = append(argvs, reflect.ValueOf(value))
     		case reflect.Int8   :
-      											 value, _ := strconv.ParseInt(param, 10, 8)
-      											 argvs     = append(argvs, reflect.ValueOf(int8(value)))
+      								value, _ := strconv.ParseInt(param, 10, 8)
+      								argvs     = append(argvs, reflect.ValueOf(int8(value)))
     		case reflect.Int16  :
-      											 value, _ := strconv.ParseInt(param, 10, 16)
-      											 argvs     = append(argvs, reflect.ValueOf(int16(value)))
+      								value, _ := strconv.ParseInt(param, 10, 16)
+      								argvs     = append(argvs, reflect.ValueOf(int16(value)))
     		case reflect.Int32  :
-      											 value, _ := strconv.ParseInt(param, 10, 32)
-      											 argvs     = append(argvs, reflect.ValueOf(int32(value)))
+      								value, _ := strconv.ParseInt(param, 10, 32)
+      								argvs     = append(argvs, reflect.ValueOf(int32(value)))
     		case reflect.Int64  :
-      											 value, _ := strconv.ParseInt(param, 10, 64)
-      											 argvs     = append(argvs, reflect.ValueOf(value))
+      								value, _ := strconv.ParseInt(param, 10, 64)
+      								argvs     = append(argvs, reflect.ValueOf(value))
 
-      	case reflect.Uint   :
-      											 value, _ := strconv.ParseUint(param, 10, 32)
-      											 argvs     = append(argvs, reflect.ValueOf(uint(value)))
+      	    case reflect.Uint   :
+      								value, _ := strconv.ParseUint(param, 10, 32)
+      								argvs     = append(argvs, reflect.ValueOf(uint(value)))
     		case reflect.Uint8  :
-      											 value, _ := strconv.ParseUint(param, 10, 8)
-      											 argvs     = append(argvs, reflect.ValueOf(uint8(value)))
-      	case reflect.Uint16 :
-      											 value, _ := strconv.ParseUint(param, 10, 16)
-      											 argvs     = append(argvs, reflect.ValueOf(uint16(value)))
-      	case reflect.Uint32 :
-      											 value, _ := strconv.ParseUint(param, 10, 32)
-      											 argvs     = append(argvs, reflect.ValueOf(uint32(value)))
+      								value, _ := strconv.ParseUint(param, 10, 8)
+      								argvs     = append(argvs, reflect.ValueOf(uint8(value)))
+      	    case reflect.Uint16 :
+      								value, _ := strconv.ParseUint(param, 10, 16)
+      								argvs     = append(argvs, reflect.ValueOf(uint16(value)))
+      	    case reflect.Uint32 :
+      								value, _ := strconv.ParseUint(param, 10, 32)
+      								argvs     = append(argvs, reflect.ValueOf(uint32(value)))
     		case reflect.Uint64 :
-      											 value, _ := strconv.ParseUint(param, 10, 64)
-      											 argvs     = append(argvs, reflect.ValueOf(value))
+      								value, _ := strconv.ParseUint(param, 10, 64)
+      								argvs     = append(argvs, reflect.ValueOf(value))
 
     		case reflect.Bool   :
-      											 value, _ := strconv.ParseBool(param)
-      											 argvs     = append(argvs, reflect.ValueOf(value))
+      								value, _ := strconv.ParseBool(param)
+      								argvs     = append(argvs, reflect.ValueOf(value))
 
-				case reflect.Float32:
-        										 value, _ := strconv.ParseFloat(param, 32)
-        										 argvs     = append(argvs, reflect.ValueOf(float32(value)))
+			case reflect.Float32:
+        							value, _ := strconv.ParseFloat(param, 32)
+        							argvs     = append(argvs, reflect.ValueOf(float32(value)))
     		case reflect.Float64:
-      											 value, _ := strconv.ParseFloat(param, 64)
-      											 argvs     = append(argvs, reflect.ValueOf(value))
+      								value, _ := strconv.ParseFloat(param, 64)
+      								argvs     = append(argvs, reflect.ValueOf(value))
 
-    		default							:
-    												 log.Printf("Unsupported argument type:%s", route.args[i].Kind())
-      											 return false
-    		}
+    		default				:
+    								log.Printf("Unsupported argument type:%s", route.args[i].Kind())
+      								return false
+    	}
   	}
 
     result := route.method.Call(argvs)
