@@ -8,7 +8,7 @@ import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
 import "github.com/boyxp/nova/exception"
-import "github.com/boyxp/nova/utils"
+import "github.com/boyxp/nova/register"
 import "github.com/fvbock/endless"
 
 func Listen(port string) *App {
@@ -32,11 +32,7 @@ func (A *App) Run() {
 }
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer func(){
-		RoutineCache.Delete("w")
-		RoutineCache.Delete("r")
-	}()
-
+	defer register.Clean()
 	defer A.Catch(w)
 
 	match := router.Match(r.RequestURI)
@@ -44,8 +40,8 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		exception.New("路由地址错误", 100)
 	}
 
-	RoutineCache.Set("w",w)
-	RoutineCache.Set("r",r)
+	register.SetResponseWriter(w)
+	register.SetRequest(r)
 
 	params := A.Request.Parse(r)
 	result := router.Invoke(r.RequestURI, params)
