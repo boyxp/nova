@@ -76,8 +76,9 @@ func (C *User) Login(name string, age uint64, check bool, balance float64, num i
 	return map[string]interface{}{"total":len(list),"list":list}
 }
 
-func (C *User) Logout() {
+func (C *User) Logout() map[string]string {
 	fmt.Println("bye")
+	return map[string]string{"res":"bye"}
 }
 
 func (C *User) private() {
