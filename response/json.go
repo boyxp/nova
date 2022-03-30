@@ -3,24 +3,22 @@ package response
 import "net/http"
 import "encoding/json"
 import "fmt"
-import "github.com/boyxp/nova/exception"
 
-type Json struct {
-	w http.ResponseWriter
-}
+type Json struct {}
 
 func (J *Json) Render(w http.ResponseWriter, result interface{}) {
-	json, err := json.Marshal(result)
+	w.Header().Set("Content-Type", "application/json")
 
+	json, err := json.Marshal(result)
 	if err != nil {
-        fmt.Fprintf(w, "{\"message\":\"%v\",\"code\":0}", err)
+        fmt.Fprintf(w, "{\"code\":-1,\"message\":\"%v\",\"response\":\"\"}", err)
         return
     }
 
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, string(json))
+	fmt.Fprintf(w, "{\"code\":0,\"message\":\"\",\"response\":%v}", string(json))
 }
 
-func (J *Json) Error(w http.ResponseWriter,message string, code int64) {
-	J.Render(w, &exception.Exception{message,code})
+func (J *Json) Error(w http.ResponseWriter, message string, code int64) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "{\"code\":%d,\"message\":\"%v\",\"response\":\"\"}", code, message)
 }
