@@ -4,6 +4,9 @@ import "log"
 import "os"
 import "net/http"
 import "runtime"
+import "syscall"
+import "strconv"
+import "io/ioutil"
 import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
@@ -22,7 +25,17 @@ type App struct {
 }
 
 func (A *App) Run() {
-	err := endless.ListenAndServe(A.Port, A)
+	server  := endless.NewServer("localhost:"+A.Port, A)
+	server.BeforeBegin = func(add string) {
+		pid := syscall.Getpid()
+		log.Println("pid:",pid)
+		con := []byte(strconv.Itoa(pid))
+		err := ioutil.WriteFile("pid", con, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	err := server.ListenAndServe()
 	if err != nil {
 		log.Println(err)
 	}
@@ -59,7 +72,15 @@ func (A *App) SetResponse(res response.Interface) *App {
 	A.Response = res
 	return A
 }
+/*
+func (A *App) Before(route string, func(w http.ResponseWriter, r *http.Request)) *App {
 
+}
+
+func (A *App) After(route string, func(w http.ResponseWriter, r *http.Request)) *App {
+
+}
+*/
 //异常捕获
 func (A *App) Catch(w http.ResponseWriter) {
         if err :=recover();err !=nil {
