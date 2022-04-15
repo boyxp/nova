@@ -6,6 +6,7 @@ import "log"
 import "net/http"
 import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/exception"
+import "github.com/boyxp/nova/response"
 
 func init() {
    router.Register(&User{})
@@ -79,6 +80,11 @@ func (C *User) Login(name string, age uint64, check bool, balance float64, num i
 func (C *User) Logout() map[string]string {
 	fmt.Println("bye")
 	return map[string]string{"res":"bye"}
+}
+
+func (C *User) Download() {
+	d := response.Download{}
+	d.Render("pid")
 }
 
 func (C *User) private() {
