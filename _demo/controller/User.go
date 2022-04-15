@@ -84,7 +84,7 @@ func (C *User) Logout() map[string]string {
 
 func (C *User) Download() {
 	d := response.Download{}
-	d.Render("pid")
+	d.Render("文件.log")
 }
 
 func (C *User) private() {
