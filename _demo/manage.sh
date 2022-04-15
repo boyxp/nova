@@ -70,7 +70,23 @@ case "$1" in
 		fi
 	;;
 	restart)
-		echo "restart"
+		PID=$(pid)
+		if [ $PID -gt 0 ];then
+			echo "重启中...原pid:$PID"
+			build
+			if [ $? -ne 0 ];then
+				kill -s HUP $PID
+				sleep 2
+				PID=$(pid)
+				if [ $PID -gt 0 ];then
+					echo "\033[32m 重启成功...新pid:$PID \033[0m" 
+				else
+					echo "\033[33m 重启失败 \033[0m"
+				fi
+			fi
+		else
+			echo "\033[33m 未运行 \033[0m"
+		fi
 	;;
 	*)
     	echo "Usage: $0 {start|stop|status|restart}"
