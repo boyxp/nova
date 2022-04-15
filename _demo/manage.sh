@@ -15,7 +15,13 @@ pid() {
 
 build() {
 	go build api.go
-	
+	if [ $? -ne 0 ];then
+		echo "\033[31m build失败，启动终止 \033[0m"
+		return 0
+	else
+		echo "build...成功"
+		return 1
+	fi
 }
 
 if [ $# -eq 0 ];then
@@ -28,27 +34,40 @@ case "$1" in
 	status)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
-			echo "运行中...pid:$PID"
+			echo "\033[32m 运行中...pid:$PID \033[0m" 
 		else
-			echo "未运行"
+			echo "\033[33m 未运行 \033[0m"
 		fi
 	;;
 	start)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
-			echo "运行中...pid:$PID"
+			echo "\033[32m 运行中...pid:$PID \033[0m"
 		else
 			echo "启动中..."
 			build
-
+			if [ $? -ne 0 ];then
+				nohup ./api >> run.log 2>&1 &
+				sleep 2
+				PID=$(pid)
+				if [ $PID -gt 0 ];then
+					echo "\033[32m 启动成功...pid:$PID \033[0m" 
+				else
+					echo "\033[33m 启动失败 \033[0m"
+				fi
+			fi
 		fi
 	;;
 	stop)
 		PID=$(pid)
-		echo $PID
-#		if $(status)>0;then
-#			echo "yes"
-#		fi
+		if [ $PID -gt 0 ];then
+			echo "停止中..."
+			kill -s TERM $PID
+			sleep 2
+			echo "\033[32m 已停止 \033[0m"
+		else
+			echo "\033[33m 未运行 \033[0m"
+		fi
 	;;
 	restart)
 		echo "restart"
