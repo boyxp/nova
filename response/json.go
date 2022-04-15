@@ -1,12 +1,13 @@
 package response
 
-import "net/http"
-import "encoding/json"
 import "fmt"
+import "encoding/json"
+import "github.com/boyxp/nova/register"
 
 type Json struct {}
 
-func (J *Json) Render(w http.ResponseWriter, result interface{}) {
+func (J *Json) Render(result interface{}) {
+	w := register.GetResponseWriter()
 	w.Header().Set("Content-Type", "application/json")
 
 	json, err := json.Marshal(result)
@@ -18,7 +19,8 @@ func (J *Json) Render(w http.ResponseWriter, result interface{}) {
 	fmt.Fprintf(w, "{\"code\":0,\"message\":\"\",\"response\":%v}", string(json))
 }
 
-func (J *Json) Error(w http.ResponseWriter, message string, code int64) {
+func (J *Json) Error(message string, code int64) {
+	w := register.GetResponseWriter()
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "{\"code\":%d,\"message\":\"%v\",\"response\":\"\"}", code, message)
 }
