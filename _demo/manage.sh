@@ -1,9 +1,11 @@
 #!/bin/bash
 
+PROGRAM=api
+
 pid() {
 	if [ -f "./pid" ];then
     	PID=$(cat "./pid")
-    	EXIST=$(ps aux | awk '{print $2}'| grep -w $PID)
+    	EXIST=$(ps aux | awk '{print $2}' | grep -w $PID)
 		if [ $EXIST ];then
 			echo $PID
 			return
@@ -14,7 +16,7 @@ pid() {
 }
 
 build() {
-	go build api.go
+	go build $PROGRAM.go
 	if [ $? -ne 0 ];then
 		echo "\033[31m build失败，启动终止 \033[0m"
 		return 0
@@ -30,7 +32,7 @@ if [ $# -eq 0 ];then
 fi
 
 
-case "$1" in 
+case "$1" in
 	status)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
@@ -47,7 +49,7 @@ case "$1" in
 			echo "启动中..."
 			build
 			if [ $? -ne 0 ];then
-				nohup ./api >> run.log 2>&1 &
+				nohup ./$PROGRAM >> run.log 2>&1 &
 				sleep 2
 				PID=$(pid)
 				if [ $PID -gt 0 ];then
@@ -63,8 +65,13 @@ case "$1" in
 		if [ $PID -gt 0 ];then
 			echo "停止中..."
 			kill -s TERM $PID
-			sleep 2
-			echo "\033[32m 已停止 \033[0m"
+			sleep 3
+			PID=$(pid)
+			if [ $PID -gt 0 ];then
+				echo "\033[33m 停止失败...pid:$PID \033[0m"
+			else
+				echo "\033[32m 已停止 \033[0m" 
+			fi
 		else
 			echo "\033[33m 未运行 \033[0m"
 		fi
