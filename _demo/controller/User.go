@@ -87,6 +87,11 @@ func (C *User) Download() {
 	d.Render("文件.log")
 }
 
+func (C *User) Jump() {
+	d := response.Redirect{}
+	d.Render("https://www.baidu.com")
+}
+
 func (C *User) private() {
 	fmt.Println("private")
 }
