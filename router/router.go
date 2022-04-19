@@ -40,14 +40,15 @@ func Register(controller interface{}) bool {
 	if strings.Contains(module, ".") {
 		module = module[strings.Index(module, ".")+1:]
 	}
+	routeModule := strings.ToLower(module)
 
     maps := scan(file, module)
-
 
 	//遍历控制器方法
     for i:= 0; i < v.NumMethod(); i++ {
     	method := v.Method(i)
     	action := v.Type().Method(i).Name
+    	routeAction := strings.ToLower(action)
 
 		//遍历方法参数取得参数类型
 		params := make([]reflect.Type, 0, v.NumMethod())
@@ -55,8 +56,8 @@ func Register(controller interface{}) bool {
       		params = append(params, method.Type().In(j))
     	}
 
-    	if routes[module]==nil {
-    		routes[module] = make(map[string]Route)
+    	if routes[routeModule]==nil {
+    		routes[routeModule] = make(map[string]Route)
     	}
 
     	//判断是否有参数名称
@@ -70,7 +71,7 @@ func Register(controller interface{}) bool {
       	    panic(module+":"+action+"参数匹配失败");
         }
 
-        routes[module][action] = Route{method,params, names}
+        routes[routeModule][routeAction] = Route{method,params, names}
 	}
 
 	return true
@@ -128,6 +129,7 @@ func scan(path string, module string) map[string][]string {
 
 //检查路由是否匹配
 func Match(path string) bool {
+	path = strings.ToLower(path)
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
 	}
@@ -144,6 +146,7 @@ func Match(path string) bool {
 
 //匹配路由并调用控制器方法
 func Invoke(path string, args map[string]string) interface{} {
+	path = strings.ToLower(path)
 	if strings.Contains(path, "?") {
 		path = path[0:strings.Index(path, "?")]
 	}
