@@ -8,14 +8,19 @@ import (
 )
 
 func main(){
-	o := Orm{table:"monitor"}
-	o.Insert(map[string]interface{}{"test":"111"})
-
+	o := Orm{table:"monitor",primary:"id", scheme:map[string]string{"test":"string","create_at":"timestamp"}}
+	//o.Insert(map[string]interface{}{"test":"111"})
+	o.Field("test,create_at").Where("test","bb")
 }
 
 type Orm struct {
 	db *sql.DB
 	table string
+	fields string
+	primary string
+	scheme map[string]string
+	conds []string
+	params []interface{}
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -96,12 +101,42 @@ func (O *Orm) Count() {
 
 }
 
-func (O *Orm) Field() {
-
+func (O *Orm) Field(fields string) *Orm {
+	O.fields = fields
+	return O
 }
 
-func (O *Orm) Where() {
+func (O *Orm) Where(conds ...interface{}) {
+	len := len(conds)
+	switch len {
+		case 1 :
+				id, ok := conds[0].(int)
+				if !ok {
+					panic("查询条件应为int类型")
+				}
+				O.conds  = append(O.conds, O.primary+"=?")
+				O.params = append(O.params, id)
+		case 2 :
+				field, ok := conds[0].(string)
+				if !ok {
+					panic("查询字段应为string类型")
+				}
+				_, ok = O.scheme[field]
+				if !ok {
+					panic(field+":查询字段不存在")
+				}
 
+				value, ok := conds[1].(string)
+				if !ok {
+					panic("查询值应为string类型")
+				}
+
+				O.conds  = append(O.conds, field+"=?")
+				O.params = append(O.params, value)
+	}
+
+	fmt.Println(O.conds)
+	fmt.Println(O.params)
 }
 
 func (O *Orm) Page() {
