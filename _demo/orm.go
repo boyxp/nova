@@ -133,6 +133,35 @@ func (O *Orm) Where(conds ...interface{}) {
 
 				O.conds  = append(O.conds, field+"=?")
 				O.params = append(O.params, value)
+		case 3 :
+				field, ok := conds[0].(string)
+				if !ok {
+					panic("查询字段应为string类型")
+				}
+				_, ok = O.scheme[field]
+				if !ok {
+					panic(field+":查询字段不存在")
+				}
+
+				opr, ok := conds[1].(string)
+				if !ok {
+					panic("运算符应为string类型")
+				}
+
+				switch strings.Upper(opr) {
+					case "!=" :
+					case ">"  :
+					case ">=" :
+					case "<"  :
+					case "<=" :
+					case "IN" :
+					case "NOT IN" :
+					case "IS":
+					case "IS NOT":
+					case "BETWEEN":
+					case "LIKE":
+					case "EXP":
+				}
 	}
 
 	fmt.Println(O.conds)
