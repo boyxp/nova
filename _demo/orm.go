@@ -18,9 +18,9 @@ type Orm struct {
 	table string
 }
 
-func (O *Orm) Insert(data map[string]interface{}) {
-	fmt.Println(O.table)
+func (O *Orm) Insert(data map[string]interface{}) int64 {
 	O.open()
+	defer O.close()
 
 	fields       := []string{}
 	placeholders := []string{}
@@ -32,19 +32,23 @@ func (O *Orm) Insert(data map[string]interface{}) {
 		values       = append(values, v)
 	}
 
-	sql := "INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")"
-	fmt.Println(sql)
 	stmt, err := O.db.Prepare("INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(values...)
+
+	res, err := stmt.Exec(values...)
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	}
 
-	O.close()
+	id, err := res.LastInsertId()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return id
 }
 
 func (O *Orm) open(){
