@@ -10,7 +10,13 @@ import (
 func main(){
 	o := Orm{table:"monitor",primary:"id", scheme:map[string]string{"test":"string","create_at":"timestamp"}}
 	//o.Insert(map[string]interface{}{"test":"111"})
-	o.Field("test,create_at").Where("11").Where("test","bb").Where("test", ">=", "1").Where("test","in",[]string{"11","22","33"})
+	o.Field("test,create_at").
+	Where("11").
+	Where("test","22").
+	Where("test", ">=", "33").
+	Where("test","in",[]string{"44","55","66"}).
+	Where("test","is","null").
+	Where("test","BETWEEN", []string{"77","88"})
 }
 
 type Orm struct {
@@ -114,6 +120,7 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 				if !ok {
 					panic("查询条件应为string类型")
 				}
+
 				O.conds  = append(O.conds, O.primary+"=?")
 				O.params = append(O.params, id)
 		case 2 :
@@ -121,6 +128,7 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 				if !ok {
 					panic("查询字段应为string类型")
 				}
+
 				_, ok = O.scheme[field]
 				if !ok {
 					panic(field+":查询字段不存在")
@@ -149,7 +157,8 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 					panic("运算符应为string类型")
 				}
 
-				switch strings.ToTitle(opr) {
+				opr = strings.ToTitle(opr)
+				switch opr {
 					case "!="     : fallthrough
 					case ">"      : fallthrough
 					case ">="     : fallthrough
@@ -169,6 +178,7 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 									if !ok {
 										panic("查询条件应为[]string类型")
 									}
+
 									if len(criteria)==0 {
 										panic("查询条件应为[]string类型,且至少存在一个元素")
 									}
@@ -181,9 +191,34 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 
 									O.conds  = append(O.conds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
 
-					case "IS"     :
+					case "IS"     : fallthrough
 					case "IS NOT" :
+									criteria, ok := conds[2].(string)
+									if !ok {
+										panic("查询条件应为string类型")
+									}
+
+									criteria = strings.ToTitle(criteria)
+									if criteria!="NULL" {
+										panic("查询条件只能为null")
+									}
+
+									O.conds  = append(O.conds, field+" "+opr+" "+criteria)
+
 					case "BETWEEN":
+									criteria, ok := conds[2].([]string)
+									if !ok {
+										panic("查询条件应为[]string类型")
+									}
+
+									if len(criteria)!=2 {
+										panic("查询条件应为[]string类型,且必须2个元素")
+									}
+
+									O.conds  = append(O.conds, field+" "+opr+" ? AND ? ")
+									for _,v := range criteria {
+										O.params     = append(O.params, v)
+									}
 					case "LIKE"   :
 					case "EXP"    :
 				}
