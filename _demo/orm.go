@@ -26,13 +26,16 @@ func main(){
 type Orm struct {
 	db *sql.DB
 	table string
-	fields string
 	primary string
 	scheme map[string]string
-	conds []string
-	params []interface{}
-	page int
-	limit int
+
+	selectFields string
+	selectConds []string
+	selectParams []interface{}
+	selectPage int
+	selectLimit int
+	orderField string
+	orderSort string
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -114,7 +117,7 @@ func (O *Orm) Count() {
 }
 
 func (O *Orm) Field(fields string) *Orm {
-	O.fields = fields
+	O.selectFields = fields
 	return O
 }
 
@@ -127,8 +130,8 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 					panic("查询条件应为string类型")
 				}
 
-				O.conds  = append(O.conds, O.primary+"=?")
-				O.params = append(O.params, id)
+				O.selectConds  = append(O.selectConds, O.primary+"=?")
+				O.selectParams = append(O.selectParams, id)
 		case 2 :
 				field, ok := conds[0].(string)
 				if !ok {
@@ -145,8 +148,8 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 					panic("查询值应为string类型")
 				}
 
-				O.conds  = append(O.conds, field+"=?")
-				O.params = append(O.params, criteria)
+				O.selectConds  = append(O.selectConds, field+"=?")
+				O.selectParams = append(O.selectParams, criteria)
 		case 3 :
 				field, ok := conds[0].(string)
 				if !ok {
@@ -176,8 +179,8 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 										panic("查询条件应为string类型")
 									}
 
-									O.conds  = append(O.conds, field+" "+opr+" ?")
-									O.params = append(O.params, criteria)
+									O.selectConds  = append(O.selectConds, field+" "+opr+" ?")
+									O.selectParams = append(O.selectParams, criteria)
 
 					case "IN"     : fallthrough
 					case "NOT IN" :
@@ -193,10 +196,10 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 									placeholders := []string{}
 									for _,v := range criteria {
 										placeholders = append(placeholders, "?")
-										O.params     = append(O.params, v)
+										O.selectParams     = append(O.selectParams, v)
 									}
 
-									O.conds  = append(O.conds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
+									O.selectConds  = append(O.selectConds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
 
 					case "IS"     : fallthrough
 					case "IS NOT" :
@@ -210,7 +213,7 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 										panic("查询条件只能为null")
 									}
 
-									O.conds  = append(O.conds, field+" "+opr+" "+criteria)
+									O.selectConds  = append(O.selectConds, field+" "+opr+" "+criteria)
 
 					case "BETWEEN":
 									criteria, ok := conds[2].([]string)
@@ -222,9 +225,9 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 										panic("查询条件应为[]string类型,且必须2个元素")
 									}
 
-									O.conds  = append(O.conds, field+" "+opr+" ? AND ? ")
+									O.selectConds  = append(O.selectConds, field+" "+opr+" ? AND ? ")
 									for _,v := range criteria {
-										O.params     = append(O.params, v)
+										O.selectParams     = append(O.selectParams, v)
 									}
 
 					default        :
@@ -233,8 +236,8 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 		default : panic("查询参数不应超过3个")
 	}
 
-	fmt.Println(O.conds)
-	fmt.Println(O.params)
+	fmt.Println(O.selectConds)
+	fmt.Println(O.selectParams)
 
 	return O
 }
@@ -244,7 +247,7 @@ func (O *Orm) Page(page int) *Orm {
 		panic("页码不应小于1")
 	}
 
-	O.page = page
+	O.selectPage = page
 	return O
 }
 
@@ -253,7 +256,7 @@ func (O *Orm) Limit(limit int) *Orm {
 		panic("每页条数不应小于1")
 	}
 
-	O.limit = limit
+	O.selectLimit = limit
 	return O
 }
 
@@ -264,10 +267,13 @@ func (O *Orm) Order(field string, sort string) *Orm {
 	}
 
 	_, ok := O.scheme[field]
-	check := strings.Contains(" "+O.fields+" ", " "+field+" ")
+	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
 	if !ok && !check {
 		panic(field+":排序应为字段或聚合的别名")
 	}
+
+	O.orderField = field
+	O.orderSort  = sort
 
 	return O
 }
