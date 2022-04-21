@@ -34,8 +34,8 @@ type Orm struct {
 	selectParams []interface{}
 	selectPage int
 	selectLimit int
-	orderField string
-	orderSort string
+	selectOrderField string
+	selectOrderSort string
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -272,8 +272,8 @@ func (O *Orm) Order(field string, sort string) *Orm {
 		panic(field+":排序应为字段或聚合的别名")
 	}
 
-	O.orderField = field
-	O.orderSort  = sort
+	O.selectOrderField = field
+	O.selectOrderSort  = sort
 
 	return O
 }
