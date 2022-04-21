@@ -10,13 +10,17 @@ import (
 func main(){
 	o := Orm{table:"monitor",primary:"id", scheme:map[string]string{"test":"string","create_at":"timestamp"}}
 	//o.Insert(map[string]interface{}{"test":"111"})
-	o.Field("test,create_at").
+	o.Field("test,create_at,count(*) as total").
 	Where("11").
 	Where("test","22").
 	Where("test", ">=", "33").
 	Where("test","in",[]string{"44","55","66"}).
 	Where("test","is","null").
-	Where("test","BETWEEN", []string{"77","88"})
+	Where("test","BETWEEN", []string{"77","88"}).
+	Where("test","like","abc").
+	Page(1).
+	Limit(1).
+	Order("total","asc")
 }
 
 type Orm struct {
@@ -27,6 +31,8 @@ type Orm struct {
 	scheme map[string]string
 	conds []string
 	params []interface{}
+	page int
+	limit int
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -163,13 +169,14 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 					case ">"      : fallthrough
 					case ">="     : fallthrough
 					case "<"      : fallthrough
-					case "<="     : 
+					case "<="     : fallthrough
+					case "LIKE"   :
 									criteria, ok := conds[2].(string)
 									if !ok {
 										panic("查询条件应为string类型")
 									}
 
-									O.conds  = append(O.conds, field+opr+"?")
+									O.conds  = append(O.conds, field+" "+opr+" ?")
 									O.params = append(O.params, criteria)
 
 					case "IN"     : fallthrough
@@ -219,8 +226,9 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 									for _,v := range criteria {
 										O.params     = append(O.params, v)
 									}
-					case "LIKE"   :
-					case "EXP"    :
+
+					default        :
+									panic("不支持的操作类型:"+opr)
 				}
 		default : panic("查询参数不应超过3个")
 	}
@@ -231,16 +239,37 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 	return O
 }
 
-func (O *Orm) Page() {
+func (O *Orm) Page(page int) *Orm {
+	if page < 1 {
+		panic("页码不应小于1")
+	}
 
+	O.page = page
+	return O
 }
 
-func (O *Orm) Limit() {
+func (O *Orm) Limit(limit int) *Orm {
+	if limit < 1 {
+		panic("每页条数不应小于1")
+	}
 
+	O.limit = limit
+	return O
 }
 
-func (O *Orm) Order() {
+func (O *Orm) Order(field string, sort string) *Orm {
+	sort = strings.ToTitle(sort)
+	if sort!="DESC" && sort!="ASC" {
+		panic("排序类型只能是asc或desc")
+	}
 
+	_, ok := O.scheme[field]
+	check := strings.Contains(" "+O.fields+" ", " "+field+" ")
+	if !ok && !check {
+		panic(field+":排序应为字段或聚合的别名")
+	}
+
+	return O
 }
 
 func (O *Orm) Group() {
