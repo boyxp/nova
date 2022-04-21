@@ -10,7 +10,7 @@ import (
 func main(){
 	o := Orm{table:"monitor",primary:"id", scheme:map[string]string{"test":"string","create_at":"timestamp"}}
 	//o.Insert(map[string]interface{}{"test":"111"})
-	o.Field("test,create_at").Where("test","bb")
+	o.Field("test,create_at").Where("11").Where("test","bb").Where("test", ">=", "1").Where("test","in",[]string{"11","22","33"})
 }
 
 type Orm struct {
@@ -106,13 +106,13 @@ func (O *Orm) Field(fields string) *Orm {
 	return O
 }
 
-func (O *Orm) Where(conds ...interface{}) {
-	len := len(conds)
-	switch len {
+func (O *Orm) Where(conds ...interface{}) *Orm {
+	args_len := len(conds)
+	switch args_len {
 		case 1 :
-				id, ok := conds[0].(int)
+				id, ok := conds[0].(string)
 				if !ok {
-					panic("查询条件应为int类型")
+					panic("查询条件应为string类型")
 				}
 				O.conds  = append(O.conds, O.primary+"=?")
 				O.params = append(O.params, id)
@@ -126,18 +126,19 @@ func (O *Orm) Where(conds ...interface{}) {
 					panic(field+":查询字段不存在")
 				}
 
-				value, ok := conds[1].(string)
+				criteria, ok := conds[1].(string)
 				if !ok {
 					panic("查询值应为string类型")
 				}
 
 				O.conds  = append(O.conds, field+"=?")
-				O.params = append(O.params, value)
+				O.params = append(O.params, criteria)
 		case 3 :
 				field, ok := conds[0].(string)
 				if !ok {
 					panic("查询字段应为string类型")
 				}
+
 				_, ok = O.scheme[field]
 				if !ok {
 					panic(field+":查询字段不存在")
@@ -148,24 +149,51 @@ func (O *Orm) Where(conds ...interface{}) {
 					panic("运算符应为string类型")
 				}
 
-				switch strings.Upper(opr) {
-					case "!=" :
-					case ">"  :
-					case ">=" :
-					case "<"  :
-					case "<=" :
-					case "IN" :
+				switch strings.ToTitle(opr) {
+					case "!="     : fallthrough
+					case ">"      : fallthrough
+					case ">="     : fallthrough
+					case "<"      : fallthrough
+					case "<="     : 
+									criteria, ok := conds[2].(string)
+									if !ok {
+										panic("查询条件应为string类型")
+									}
+
+									O.conds  = append(O.conds, field+opr+"?")
+									O.params = append(O.params, criteria)
+
+					case "IN"     : fallthrough
 					case "NOT IN" :
-					case "IS":
-					case "IS NOT":
+									criteria, ok := conds[2].([]string)
+									if !ok {
+										panic("查询条件应为[]string类型")
+									}
+									if len(criteria)==0 {
+										panic("查询条件应为[]string类型,且至少存在一个元素")
+									}
+
+									placeholders := []string{}
+									for _,v := range criteria {
+										placeholders = append(placeholders, "?")
+										O.params     = append(O.params, v)
+									}
+
+									O.conds  = append(O.conds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
+
+					case "IS"     :
+					case "IS NOT" :
 					case "BETWEEN":
-					case "LIKE":
-					case "EXP":
+					case "LIKE"   :
+					case "EXP"    :
 				}
+		default : panic("查询参数不应超过3个")
 	}
 
 	fmt.Println(O.conds)
 	fmt.Println(O.params)
+
+	return O
 }
 
 func (O *Orm) Page() {
@@ -187,51 +215,3 @@ func (O *Orm) Group() {
 func (O *Orm) Having() {
 
 }
-
-/*
-//批量插入func (e *SmallormEngine) BatchInsert(data interface{}) (int64, error) {    return e.batchInsertData(data, "insert")}
-//批量替换插入func (e *SmallormEngine) BatchReplace(data interface{}) (int64, error) {    return e.batchInsertData(data, "replace")}
-
-//批量插入
-func (e *SmallormEngine) batchInsertData(batchData interface{}, insertType string) (int64, error) {
-  //反射解析  
-  getValue := reflect.ValueOf(batchData)
-  //切片大小  
-  l := getValue.Len()
-  //字段名  
-  var fieldName []string
-  //占位符  
-  var placeholderString []string
-  //循环判断  
-  for i := 0; i < l; i++ {    value := getValue.Index(i) // Value of item    typed := value.Type()      // Type of item    if typed.Kind() != reflect.Struct {      panic("批量插入的子元素必须是结构体类型")    }
-    num := value.NumField()
-    //子元素值    
-    var placeholder []string    //循环遍历子元素    
-    for j := 0; j < num; j++ {
-      //小写开头，无法反射，跳过      
-      if !value.Field(j).CanInterface() {        continue      }
-      //解析tag，找出真实的sql字段名      
-      sqlTag := typed.Field(j).Tag.Get("sql")      
-      if sqlTag != "" {        //跳过自增字段        
-      	if strings.Contains(strings.ToLower(sqlTag), "auto_increment") {          continue        } 
-      	else {          //字段名只记录第一个的          
-      		if i == 1 {            fieldName = append(fieldName, strings.Split(sqlTag, ",")[0])          }
-      		          placeholder = append(placeholder, "?")        }      } 
-      		          else {        //字段名只记录第一个的        
-      		          	if i == 1 {          fieldName = append(fieldName, typed.Field(j).Name)        }
-      		          	        placeholder = append(placeholder, "?")      }
-      //字段值      
-      e.AllExec = append(e.AllExec, value.Field(j).Interface())    }
-    //子元素拼接成多个()括号后的值    
-    placeholderString = append(placeholderString, "("+strings.Join(placeholder, ",")+")")  }
-  //拼接表，字段名，占位符  
-  e.Prepare = insertType + " into " + e.GetTable() + " (" + strings.Join(fieldName, ",") + ") values " + strings.Join(placeholderString, ",")
-  //prepare  
-  var stmt *sql.Stmt  var err error  stmt, err = e.Db.Prepare(e.Prepare)  
-  if err != nil {    return 0, e.setErrorInfo(err)  }
-  //执行exec,注意这是stmt.Exec  
-  result, err := stmt.Exec(e.AllExec...)  if err != nil {    return 0, e.setErrorInfo(err)  }
-  //获取自增ID  
-  id, _ := result.LastInsertId()  return id, nil}
-*/
-//自定义错误格式func (e *SmallormEngine) setErrorInfo(err error) error {  _, file, line, _ := runtime.Caller(1)  return errors.New("File: " + file + ":" + strconv.Itoa(line) + ", " + err.Error())}
