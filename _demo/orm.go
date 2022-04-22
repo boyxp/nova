@@ -21,7 +21,8 @@ func main(){
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
 	//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
-	result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+	//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+	result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
 	for k,v := range result {
 		fmt.Println(k, v)
 	}
@@ -461,8 +462,17 @@ func (O *Orm) selectColumns() []string {
 	return columns
 }
 
-func (O *Orm) Find() {
+func (O *Orm) Find() map[string]string {
+	var result map[string]string 
 
+	O.selectPage  = 1
+	O.selectLimit = 1
+	list := O.Select()
+	if len(list)>0 {
+		result = list[0]
+	}
+
+	return result
 }
 
 func (O *Orm) Value() {
