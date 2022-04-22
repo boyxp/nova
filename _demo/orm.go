@@ -22,7 +22,9 @@ func main(){
 	Where("test","like","abc").
 	Page(1).
 	Limit(1).
-	Order("total","asc")
+	Order("total","asc").
+	Group("test").
+	Having("total",">",1)
 }
 
 type Orm struct {
@@ -38,6 +40,7 @@ type Orm struct {
 	selectLimit int
 	selectOrder []string
 	selectGroup []string
+	selectHaving string
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -304,6 +307,21 @@ func (O *Orm) Group(field string) *Orm {
 	return O
 }
 
-func (O *Orm) Having() {
+func (O *Orm) Having(field string, opr string, criteria int) {
+	if len(O.selectGroup)==0 {
+		panic("没有聚合字段")
+	}
 
+	_, ok := O.scheme[field]
+	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+	if ok || !check {
+		panic(field+":过滤字段应为聚合别名")
+	}
+
+	if !strings.Contains(",=,!=,>,>=,<,<=,", ","+opr+",") {
+		panic("不支持的过滤操作符号:"+opr)
+	}
+
+	O.selectHaving = field+" "+opr+" "+strconv.Itoa(criteria)
+	fmt.Println(O.selectHaving)
 }
