@@ -11,6 +11,7 @@ import (
 func main(){
 	o := Orm{table:"payment",primary:"payment_id", scheme:map[string]string{"payment_id":"int","company_id":"int","batch_id":"int","receive_name":"string","create_at":"timestamp","tax_mobile":"string"}}
 
+	//普通列表查询
 	//result := o.Where("1").Select()
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("1").Select()
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","1").Select()
@@ -21,20 +22,39 @@ func main(){
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
 	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
 	//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
-	//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
-	result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
-	for k,v := range result {
-		fmt.Println(k, v)
-	}
 
-	name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
+	//聚合列表查询
+	//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+
+	//单条查询
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
+	//for k,v := range result {
+	//	fmt.Println(k, v)
+	//}
+
+	//单字段查询
+	//name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
+	//fmt.Println(name)
+
+	//非聚合单项查询
+	//max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
+	//fmt.Println(max_id)
+
+	//min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
+	//fmt.Println(min_id)
+
+	//复用查询条件
+	query := o.Field("company_id,receive_name,tax_mobile").Where("company_id",">=","1")
+	name  := query.Value("receive_name")
 	fmt.Println(name)
 
-	max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
-	fmt.Println(max_id)
+	row   := query.Find()
+	fmt.Println(row)
 
-	min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
-	fmt.Println(min_id)
+	list := query.Select()
+	for k,v := range list {
+		fmt.Println(k, v)
+	}
 }
 
 type Orm struct {
@@ -257,9 +277,6 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 		default : panic("查询参数不应超过3个")
 	}
 
-	fmt.Println(O.selectConds)
-	fmt.Println(O.selectParams)
-
 	return O
 }
 
@@ -325,7 +342,6 @@ func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 	}
 
 	O.selectHaving = field+" "+opr+" "+strconv.Itoa(criteria)
-	fmt.Println(O.selectHaving)
 
 	return O
 }
@@ -364,7 +380,6 @@ func (O *Orm) Select() []map[string]string {
 			}
 
 			record[columns[i]] = value
-			fmt.Println(columns[i], "=", value)
 		}
 
 		result = append(result, record)
@@ -373,8 +388,6 @@ func (O *Orm) Select() []map[string]string {
 	if err = rows.Err(); err != nil {
 		panic(err.Error())
 	}
-
-	fmt.Println(stmt)
 
 	return result
 }
@@ -478,9 +491,14 @@ func (O *Orm) selectColumns() []string {
 func (O *Orm) Find() map[string]string {
 	var result map[string]string 
 
+	selectPage   := O.selectPage
+	selectLimit  := O.selectLimit
 	O.selectPage  = 1
 	O.selectLimit = 1
 	list := O.Select()
+	O.selectPage  = selectPage
+	O.selectLimit = selectLimit
+
 	if len(list)>0 {
 		result = list[0]
 	}
@@ -489,6 +507,8 @@ func (O *Orm) Find() map[string]string {
 }
 
 func (O *Orm) Value(field string) string {
+	selectFields := O.selectFields
+
 	_, ok := O.scheme[field]
 	if ok {
 		O.selectFields = field
@@ -498,6 +518,7 @@ func (O *Orm) Value(field string) string {
 	}
 
 	row := O.Find()
+	O.selectFields = selectFields
 	value, ok := row[field]
 	if ok {
 		return value
