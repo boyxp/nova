@@ -51,6 +51,12 @@ func main(){
 	row   := query.Find()
 	fmt.Println(row)
 
+	count := query.Count()
+	fmt.Println("count:",count)
+
+	sum := query.Sum("payment_id")
+	fmt.Println("sum:",sum)
+
 	list := query.Select()
 	for k,v := range list {
 		fmt.Println(k, v)
@@ -131,12 +137,39 @@ func (O *Orm) Execute() {
 
 }
 
-func (O *Orm) Sum() {
+func (O *Orm) Sum(field string) int {
+	_, ok := O.scheme[field]
+	if !ok {
+		panic(field+":聚合字段不存在")
+	}
 
+	var result int
+	selectFields  := O.selectFields
+	O.selectFields = "sum("+field+") as aggs_sum"
+
+	total := O.Value("aggs_sum")
+	O.selectFields = selectFields
+	conv,err := strconv.Atoi(total)
+	if err == nil {
+		result = conv
+	}
+
+	return result
 }
 
-func (O *Orm) Count() {
+func (O *Orm) Count() int {
+	var result int
+	selectFields  := O.selectFields
+	O.selectFields = "count(*) as aggs_count"
 
+	total := O.Value("aggs_count")
+	O.selectFields = selectFields
+	conv,err := strconv.Atoi(total)
+	if err == nil {
+		result = conv
+	}
+
+	return result
 }
 
 func (O *Orm) Field(fields string) *Orm {
@@ -398,11 +431,11 @@ func (O *Orm) selectStmt() string {
 	if O.selectFields == "" {
 		sql.WriteString("* ")
 	} else {
-		if strings.Contains(strings.ToTitle(O.selectFields), " COUNT(") && len(O.selectGroup)==0 {
+		if strings.Contains(strings.ToTitle(O.selectFields), " COUNT(") && strings.Contains(O.selectFields, ",") && len(O.selectGroup)==0 {
 			panic("缺少聚合字段")
 		}
 
-		if strings.Contains(strings.ToTitle(O.selectFields), " SUM(") && len(O.selectGroup)==0 {
+		if strings.Contains(strings.ToTitle(O.selectFields), " SUM(") && strings.Contains(O.selectFields, ",") && len(O.selectGroup)==0 {
 			panic("缺少聚合字段")
 		}
 
