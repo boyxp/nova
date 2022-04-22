@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"strconv"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,6 +18,7 @@ func main(){
 	Where("test","in",[]string{"44","55","66"}).
 	Where("test","is","null").
 	Where("test","BETWEEN", []string{"77","88"}).
+	Where("test in (?,?) and test>?", "99","100","101").
 	Where("test","like","abc").
 	Page(1).
 	Limit(1).
@@ -123,21 +125,40 @@ func (O *Orm) Field(fields string) *Orm {
 
 func (O *Orm) Where(conds ...interface{}) *Orm {
 	args_len := len(conds)
+	if args_len < 1 {
+		panic("查询参数不应为空")
+	}
+
+	field, ok := conds[0].(string)
+	if !ok {
+		panic("第一个参数应为string类型")
+	}
+
+	if placeholder_count := strings.Count(field, "?"); placeholder_count > 0 {
+		if placeholder_count != args_len -1 {
+			panic("查询占位符和参数数量不匹配")
+		}
+
+		for k,v := range conds {
+			param, ok := v.(string)
+			if !ok {
+				panic("第"+strconv.Itoa(k)+"个参数应为string类型")
+			}
+
+			O.selectParams = append(O.selectParams, param)
+		}
+
+		O.selectConds  = append(O.selectConds, field)
+
+		return O
+	}
+
+
 	switch args_len {
 		case 1 :
-				id, ok := conds[0].(string)
-				if !ok {
-					panic("查询条件应为string类型")
-				}
-
 				O.selectConds  = append(O.selectConds, O.primary+"=?")
-				O.selectParams = append(O.selectParams, id)
+				O.selectParams = append(O.selectParams, field)
 		case 2 :
-				field, ok := conds[0].(string)
-				if !ok {
-					panic("查询字段应为string类型")
-				}
-
 				_, ok = O.scheme[field]
 				if !ok {
 					panic(field+":查询字段不存在")
@@ -151,11 +172,6 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 				O.selectConds  = append(O.selectConds, field+"=?")
 				O.selectParams = append(O.selectParams, criteria)
 		case 3 :
-				field, ok := conds[0].(string)
-				if !ok {
-					panic("查询字段应为string类型")
-				}
-
 				_, ok = O.scheme[field]
 				if !ok {
 					panic(field+":查询字段不存在")
