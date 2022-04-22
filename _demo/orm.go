@@ -20,11 +20,13 @@ func main(){
 	Where("test","BETWEEN", []string{"77","88"}).
 	Where("test in (?,?) and test>?", "99","100","101").
 	Where("test","like","abc").
-	Page(1).
-	Limit(1).
+	Page(10).
+	Limit(15).
 	Order("total","asc").
 	Group("test").
-	Having("total",">",1)
+	Group("create_at").
+	Having("total",">",1).
+	Select()
 }
 
 type Orm struct {
@@ -94,18 +96,6 @@ func (O *Orm) Delete() {
 }
 
 func (O *Orm) Update() {
-
-}
-
-func (O *Orm) Select() {
-
-}
-
-func (O *Orm) Find() {
-
-}
-
-func (O *Orm) Value() {
 
 }
 
@@ -307,7 +297,7 @@ func (O *Orm) Group(field string) *Orm {
 	return O
 }
 
-func (O *Orm) Having(field string, opr string, criteria int) {
+func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 	if len(O.selectGroup)==0 {
 		panic("没有聚合字段")
 	}
@@ -324,4 +314,76 @@ func (O *Orm) Having(field string, opr string, criteria int) {
 
 	O.selectHaving = field+" "+opr+" "+strconv.Itoa(criteria)
 	fmt.Println(O.selectHaving)
+
+	return O
 }
+
+func (O *Orm) Select() {
+	var sql strings.Builder
+
+	sql.WriteString("SELECT ")
+	if O.selectFields == "" {
+		sql.WriteString("* ")
+	} else {
+		sql.WriteString(O.selectFields)
+		sql.WriteString(" ")
+	}
+
+	sql.WriteString("FROM ")
+	sql.WriteString(O.table)
+	sql.WriteString(" ")
+
+	if len(O.selectConds)>0 {
+		sql.WriteString("WHERE ")
+		sql.WriteString(strings.Join(O.selectConds, " AND "))
+		sql.WriteString(" ")
+	}
+
+	if len(O.selectGroup)>0 {
+		sql.WriteString("GROUP BY ")
+		sql.WriteString(strings.Join(O.selectGroup, ","))
+		sql.WriteString(" ")
+	}
+
+	if O.selectHaving!="" {
+		sql.WriteString("HAVING ")
+		sql.WriteString(O.selectHaving)
+		sql.WriteString(" ")
+	}
+
+	if len(O.selectOrder)>0 {
+		sql.WriteString("ORDER BY ")
+		sql.WriteString(strings.Join(O.selectOrder,","))
+		sql.WriteString(" ")
+	}
+
+
+	var offset int
+	if O.selectLimit==0 {
+		O.selectLimit = 20
+	}
+
+	if O.selectPage<=1 {
+		O.selectPage = 1
+		offset = 0
+	} else {
+		offset = O.selectPage*O.selectLimit-O.selectLimit
+	}
+
+	sql.WriteString("LIMIT ")
+	sql.WriteString(strconv.Itoa(offset))
+	sql.WriteString(",")
+	sql.WriteString(strconv.Itoa(O.selectLimit))
+	sql.WriteString("  ")
+
+	fmt.Println(sql.String())
+}
+
+func (O *Orm) Find() {
+
+}
+
+func (O *Orm) Value() {
+
+}
+
