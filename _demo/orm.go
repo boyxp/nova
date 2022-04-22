@@ -26,6 +26,15 @@ func main(){
 	for k,v := range result {
 		fmt.Println(k, v)
 	}
+
+	name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
+	fmt.Println(name)
+
+	max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
+	fmt.Println(max_id)
+
+	min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
+	fmt.Println(min_id)
 }
 
 type Orm struct {
@@ -376,7 +385,11 @@ func (O *Orm) selectStmt() string {
 	if O.selectFields == "" {
 		sql.WriteString("* ")
 	} else {
-		if strings.Contains(O.selectFields, ")") && len(O.selectGroup)==0 {
+		if strings.Contains(strings.ToTitle(O.selectFields), " COUNT(") && len(O.selectGroup)==0 {
+			panic("缺少聚合字段")
+		}
+
+		if strings.Contains(strings.ToTitle(O.selectFields), " SUM(") && len(O.selectGroup)==0 {
 			panic("缺少聚合字段")
 		}
 
@@ -475,7 +488,21 @@ func (O *Orm) Find() map[string]string {
 	return result
 }
 
-func (O *Orm) Value() {
+func (O *Orm) Value(field string) string {
+	_, ok := O.scheme[field]
+	if ok {
+		O.selectFields = field
+	} else if strings.Contains(" "+O.selectFields+" ", " "+field+" ") {
+	} else {
+		panic(field+":取值字段应为普通字段或聚合别名")
+	}
 
+	row := O.Find()
+	value, ok := row[field]
+	if ok {
+		return value
+	}
+
+	return ""
 }
 
