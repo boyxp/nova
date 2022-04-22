@@ -11,27 +11,20 @@ import (
 func main(){
 	o := Orm{table:"payment",primary:"payment_id", scheme:map[string]string{"payment_id":"int","company_id":"int","batch_id":"int","receive_name":"string","create_at":"timestamp","tax_mobile":"string"}}
 
-	//o.Where("1").Select()
-	o.Field("company_id  ,  receive_name,tax_mobile").Where("1").Select()
-	//o.Field("company_id,count(*) as total").Where("1").Select()
-
-	//o.Insert(map[string]interface{}{"test":"111"})
-	//o.Field("company_id,count(*) as total").
-	//Where("1").
-	//Where("company_id","22").
-	//Where("company_id", ">=", "33").
-	//Where("company_id","in",[]string{"44","55","66"}).
-	//Where("company_id","is","null").
-	//Where("company_id","BETWEEN", []string{"77","88"}).
-	//Where("company_id in (?,?) and test>?", "99","100","101").
-	//Where("receive_name","like","abc").
-	//Page(1).
-	//Limit(5).
-	//Order("total","asc").
-	//Group("company_id").
-	//Group("batch_id").
-	//Having("total",">",1).
-	//Select()
+	//result := o.Where("1").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("1").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","1").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id",">=","1").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","in",[]string{"1","2","3"}).Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is not","null").Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
+	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
+	//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
+	result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+	for k,v := range result {
+		fmt.Println(k, v)
+	}
 }
 
 type Orm struct {
@@ -138,6 +131,10 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 		}
 
 		for k,v := range conds {
+			if k==0 {
+				continue
+			}
+
 			param, ok := v.(string)
 			if !ok {
 				panic("第"+strconv.Itoa(k)+"个参数应为string类型")
@@ -323,13 +320,12 @@ func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 	return O
 }
 
-func (O *Orm) Select() {
+func (O *Orm) Select() []map[string]string {
+	var result []map[string]string
 	O.open()
 	defer O.close()
 
 	stmt := O.selectStmt()
-	
-
 	rows, err := O.db.Query(stmt, O.selectParams...)
 	if err != nil {
 		panic(err.Error())
@@ -348,6 +344,7 @@ func (O *Orm) Select() {
 			panic(err.Error())
 		}
 
+		var record = map[string]string{}
 		var value string
 		for i, col := range values {
 			if col == nil {
@@ -356,8 +353,11 @@ func (O *Orm) Select() {
 				value = string(col)
 			}
 
+			record[columns[i]] = value
 			fmt.Println(columns[i], "=", value)
 		}
+
+		result = append(result, record)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -365,6 +365,8 @@ func (O *Orm) Select() {
 	}
 
 	fmt.Println(stmt)
+
+	return result
 }
 func (O *Orm) selectStmt() string {
 	var sql strings.Builder
@@ -373,6 +375,10 @@ func (O *Orm) selectStmt() string {
 	if O.selectFields == "" {
 		sql.WriteString("* ")
 	} else {
+		if strings.Contains(O.selectFields, ")") && len(O.selectGroup)==0 {
+			panic("缺少聚合字段")
+		}
+
 		sql.WriteString(O.selectFields)
 		sql.WriteString(" ")
 	}
@@ -388,6 +394,10 @@ func (O *Orm) selectStmt() string {
 	}
 
 	if len(O.selectGroup)>0 {
+		if !strings.Contains(O.selectFields, ")") {
+			panic("缺少聚合查询")
+		}
+
 		sql.WriteString("GROUP BY ")
 		sql.WriteString(strings.Join(O.selectGroup, ","))
 		sql.WriteString(" ")
