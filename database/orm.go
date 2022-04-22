@@ -1,5 +1,6 @@
 package database
 
+import "unicode"
 import "runtime"
 import "strings"
 import "strconv"
@@ -278,7 +279,23 @@ func (O *Orm) Field(fields string) *Orm {
 
 func Init() *Orm {
 	_, file, _, _ := runtime.Caller(1)
-	panic(file)
+	path  := strings.Split(file, "/")
+	model := strings.Trim(path[len(path)-1], ".go")
+//==处理一次，sync缓存
+
+	var buf strings.Builder
+	for i, l := range model {
+		if unicode.IsUpper(l) {
+			if i != 0 {
+  				buf.WriteString("_")
+			}
+ 			buf.WriteString(string(unicode.ToLower(l)))
+		} else {
+ 			buf.WriteString(string(l))
+		}
+	}
+	table := buf.String()
+
 	//return O
 	return &Orm{}
 }
