@@ -9,24 +9,29 @@ import (
 )
 
 func main(){
-	o := Orm{table:"monitor",primary:"id", scheme:map[string]string{"test":"string","create_at":"timestamp"}}
+	o := Orm{table:"payment",primary:"payment_id", scheme:map[string]string{"payment_id":"int","company_id":"int","batch_id":"int","receive_name":"string","create_at":"timestamp","tax_mobile":"string"}}
+
+	//o.Where("1").Select()
+	o.Field("company_id  ,  receive_name,tax_mobile").Where("1").Select()
+	//o.Field("company_id,count(*) as total").Where("1").Select()
+
 	//o.Insert(map[string]interface{}{"test":"111"})
-	o.Field("test,create_at,count(*) as total").
-	Where("11").
-	Where("test","22").
-	Where("test", ">=", "33").
-	Where("test","in",[]string{"44","55","66"}).
-	Where("test","is","null").
-	Where("test","BETWEEN", []string{"77","88"}).
-	Where("test in (?,?) and test>?", "99","100","101").
-	Where("test","like","abc").
-	Page(10).
-	Limit(15).
-	Order("total","asc").
-	Group("test").
-	Group("create_at").
-	Having("total",">",1).
-	Select()
+	//o.Field("company_id,count(*) as total").
+	//Where("1").
+	//Where("company_id","22").
+	//Where("company_id", ">=", "33").
+	//Where("company_id","in",[]string{"44","55","66"}).
+	//Where("company_id","is","null").
+	//Where("company_id","BETWEEN", []string{"77","88"}).
+	//Where("company_id in (?,?) and test>?", "99","100","101").
+	//Where("receive_name","like","abc").
+	//Page(1).
+	//Limit(5).
+	//Order("total","asc").
+	//Group("company_id").
+	//Group("batch_id").
+	//Having("total",">",1).
+	//Select()
 }
 
 type Orm struct {
@@ -319,6 +324,49 @@ func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 }
 
 func (O *Orm) Select() {
+	O.open()
+	defer O.close()
+
+	stmt := O.selectStmt()
+	
+
+	rows, err := O.db.Query(stmt, O.selectParams...)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	columns  := O.selectColumns()
+	values   := make([]sql.RawBytes, len(columns))
+	scanArgs := make([]interface{}, len(columns))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		var value string
+		for i, col := range values {
+			if col == nil {
+				value = "NULL"
+			} else {
+				value = string(col)
+			}
+
+			fmt.Println(columns[i], "=", value)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println(stmt)
+}
+func (O *Orm) selectStmt() string {
 	var sql strings.Builder
 
 	sql.WriteString("SELECT ")
@@ -376,7 +424,31 @@ func (O *Orm) Select() {
 	sql.WriteString(strconv.Itoa(O.selectLimit))
 	sql.WriteString("  ")
 
-	fmt.Println(sql.String())
+	return sql.String()
+}
+func (O *Orm) selectColumns() []string {
+	var columns []string
+	if O.selectFields == "" || O.selectFields=="*" {
+		for k,_ := range O.scheme {
+			columns = append(columns, k)
+		}
+		return columns
+	}
+
+	if !strings.Contains(O.selectFields," ") {
+		return strings.Split(O.selectFields,",")
+	} else {
+		for _,v := range strings.Split(O.selectFields,",") {
+			if !strings.Contains(v, " ") {
+				columns = append(columns, v)
+			} else {
+				tmp := strings.Split(strings.TrimSpace(v)," ")
+				columns = append(columns, tmp[len(tmp)-1])
+			}
+		}
+	}
+
+	return columns
 }
 
 func (O *Orm) Find() {
