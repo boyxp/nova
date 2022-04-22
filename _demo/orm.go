@@ -44,23 +44,31 @@ func main(){
 	//fmt.Println(min_id)
 
 	//复用查询条件
-	query := o.Field("company_id,receive_name,tax_mobile").Where("company_id",">=","1")
-	name  := query.Value("receive_name")
-	fmt.Println(name)
+	//query := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1"})
+	//name  := query.Value("receive_name")
+	//fmt.Println(name)
 
-	row   := query.Find()
-	fmt.Println(row)
+	//row   := query.Find()
+	//fmt.Println(row)
 
-	count := query.Count()
-	fmt.Println("count:",count)
+	//count := query.Count()
+	//fmt.Println("count:",count)
 
-	sum := query.Sum("payment_id")
-	fmt.Println("sum:",sum)
+	//sum := query.Sum("payment_id")
+	//fmt.Println("sum:",sum)
 
-	list := query.Select()
-	for k,v := range list {
-		fmt.Println(k, v)
-	}
+	//list := query.Select()
+	//for k,v := range list {
+	//	fmt.Println(k, v)
+	//}
+
+	//删除
+	//dar := query.Delete()
+	//fmt.Println("delete:", dar)
+
+	//更新
+	//uar := o.Where("payment_id", "11").Update(map[string]string{"tax_mobile":"138888"})
+	//fmt.Println("update:", uar)
 }
 
 type Orm struct {
@@ -125,12 +133,107 @@ func (O *Orm) close() {
 	O.db.Close()
 }
 
-func (O *Orm) Delete() {
+func (O *Orm) Delete() int64 {
+	O.open()
+	defer O.close()
 
+	sql := O.deleteStmt()
+	stmt, err := O.db.Prepare(sql)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(O.selectParams...)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	ar, err := res.RowsAffected()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return ar
+}
+func (O *Orm) deleteStmt() string {
+	var sql strings.Builder
+
+	sql.WriteString("DELETE FROM ")
+	sql.WriteString(O.table)
+	if len(O.selectConds)>0 {
+		sql.WriteString(" WHERE ")
+		sql.WriteString(strings.Join(O.selectConds, " AND "))
+		sql.WriteString(" ")
+	}
+
+	if O.selectLimit==0 {
+		sql.WriteString("LIMIT 20")
+	} else {
+		sql.WriteString("LIMIT ")
+		sql.WriteString(strconv.Itoa(O.selectLimit))
+	}
+
+	return sql.String()
 }
 
-func (O *Orm) Update() {
 
+func (O *Orm) Update(data map[string]string) int64 {
+	O.open()
+	defer O.close()
+
+	if len(data)==0 {
+		panic("没有更新字段")
+	}
+
+	sql, params := O.updateStmt(data)
+
+	stmt, err := O.db.Prepare(sql)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(params...)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	ar, err := res.RowsAffected()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return ar
+}
+func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
+	var sql strings.Builder
+	var params []interface{}
+
+	sql.WriteString("UPDATE ")
+	sql.WriteString(O.table)
+	sql.WriteString(" SET ")
+
+	for f,v := range data {
+		sql.WriteString(f+"=? ")
+		params = append(params, v)
+	}
+	params = append(params, O.selectParams...)
+
+	if len(O.selectConds)>0 {
+		sql.WriteString(" WHERE ")
+		sql.WriteString(strings.Join(O.selectConds, " AND "))
+		sql.WriteString(" ")
+	}
+
+	if O.selectLimit==0 {
+		sql.WriteString("LIMIT 20")
+	} else {
+		sql.WriteString("LIMIT ")
+		sql.WriteString(strconv.Itoa(O.selectLimit))
+	}
+
+	return sql.String(), params
 }
 
 func (O *Orm) Execute() {
