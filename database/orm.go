@@ -1,5 +1,5 @@
 package database
-
+import "log"
 import "unicode"
 import "runtime"
 import "strings"
@@ -296,8 +296,31 @@ func Init() *Orm {
 	}
 	table := buf.String()
 
+	O := &Orm{}
+	O.Init(table)
+
 	//return O
-	return &Orm{}
+	return O
+}
+func (O *Orm) Init(table string) {
+	O.table  = "information_schema.columns"
+	O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
+	columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
+				Where("TABLE_SCHEMA","dev_xinzhanghu").
+				Where("TABLE_NAME", table).
+				Select()
+
+	var scheme = map[string]string{}
+	var primary string
+	for _,r := range columns {
+		log.Println(r["COLUMN_NAME"], "=", r["COLUMN_DEFAULT"])
+		scheme[r["COLUMN_NAME"]] = r["IS_NULLABLE"]
+		if r["COLUMN_KEY"]=="PRI" {
+			primary = r["COLUMN_NAME"]
+		}
+	}
+
+	log.Println(scheme, primary)
 }
 
 func (O *Orm) Where(conds ...interface{}) *Orm {
