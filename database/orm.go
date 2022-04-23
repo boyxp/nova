@@ -1,5 +1,5 @@
 package database
-import "log"
+
 import "unicode"
 import "runtime"
 import "strings"
@@ -297,12 +297,11 @@ func Init() *Orm {
 	table := buf.String()
 
 	O := &Orm{}
-	O.Init(table)
+	O = O.Init(table)
 
-	//return O
 	return O
 }
-func (O *Orm) Init(table string) {
+func (O *Orm) Init(table string) *Orm {
 	O.table  = "information_schema.columns"
 	O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
 	columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
@@ -324,7 +323,14 @@ func (O *Orm) Init(table string) {
 		}
 	}
 
-	log.Println(scheme, primary)
+	O.table   = table
+	O.scheme  = scheme
+	O.primary = primary
+	O.selectFields = ""
+	O.selectConds  = []string{}
+	O.selectParams = []interface{}{}
+
+	return O
 }
 
 func (O *Orm) Where(conds ...interface{}) *Orm {
