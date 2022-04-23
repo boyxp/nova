@@ -1,6 +1,7 @@
 package database
 
 import "log"
+import "sync"
 import "unicode"
 import "runtime"
 import "strings"
@@ -277,32 +278,47 @@ func (O *Orm) Field(fields string) *Orm {
 	O.selectFields = fields
 	return O
 }
-
-func Init() *Orm {
+var cache sync.Map
+func Init(tag ...string) *Orm {
 	_, file, _, _ := runtime.Caller(1)
 	path  := strings.Split(file, "/")
 	model := strings.Trim(path[len(path)-1], ".go")
-//==处理一次，sync缓存
 
-	var buf strings.Builder
-	for i, l := range model {
-		if unicode.IsUpper(l) {
-			if i != 0 {
-  				buf.WriteString("_")
-			}
- 			buf.WriteString(string(unicode.ToLower(l)))
-		} else {
- 			buf.WriteString(string(l))
-		}
+	var dbtag string
+	if len(tag)==0 {
+		dbtag = "database"
+	} else {
+		dbtag = tag[0]
 	}
-	table := buf.String()
+log.Println(dbtag)
+
+	var table string
+	value, ok := cache.Load(dbtag+"."+model)
+    if !ok {
+		var buf strings.Builder
+		for i, l := range model {
+			if unicode.IsUpper(l) {
+				if i != 0 {
+  					buf.WriteString("_")
+				}
+ 				buf.WriteString(string(unicode.ToLower(l)))
+			} else {
+ 				buf.WriteString(string(l))
+			}
+		}
+
+		table = buf.String()
+		cache.Store(dbtag+"."+model, table)
+    } else {
+    	table, _ = value.(string)
+    }
 
 	O := &Orm{}
-	O = O.Init(table)
+	O = O.Init(table, dbtag)
 
 	return O
 }
-func (O *Orm) Init(table string) *Orm {
+func (O *Orm) Init(table string, dbtag string) *Orm {
 	O.table  = "information_schema.columns"
 	O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
 	columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
