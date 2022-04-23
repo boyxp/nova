@@ -1,9 +1,6 @@
 package database
 
 import "log"
-import "sync"
-import "unicode"
-import "runtime"
 import "strings"
 import "strconv"
 import "database/sql"
@@ -280,46 +277,7 @@ func (O *Orm) Field(fields string) *Orm {
 	O.selectFields = fields
 	return O
 }
-var cache sync.Map
-func Init(tag ...string) *Orm {
-	_, file, _, _ := runtime.Caller(1)
-	path  := strings.Split(file, "/")
-	model := strings.Trim(path[len(path)-1], ".go")
 
-	var dbtag string
-	if len(tag)==0 {
-		dbtag = "database"
-	} else {
-		dbtag = tag[0]
-	}
-log.Println(dbtag)
-
-	var table string
-	value, ok := cache.Load(dbtag+"."+model)
-    if !ok {
-		var buf strings.Builder
-		for i, l := range model {
-			if unicode.IsUpper(l) {
-				if i != 0 {
-  					buf.WriteString("_")
-				}
- 				buf.WriteString(string(unicode.ToLower(l)))
-			} else {
- 				buf.WriteString(string(l))
-			}
-		}
-
-		table = buf.String()
-		cache.Store(dbtag+"."+model, table)
-    } else {
-    	table, _ = value.(string)
-    }
-
-	O := &Orm{}
-	O = O.Init(table, dbtag)
-
-	return O
-}
 func (O *Orm) Init(table string, dbtag string) *Orm {
 	O.dbname = Dbname(dbtag)
 	O.dsn    = Dsn(dbtag)
