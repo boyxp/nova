@@ -72,6 +72,8 @@ import _ "github.com/go-sql-driver/mysql"
 
 type Orm struct {
 	db *sql.DB
+	dbname string
+	dsn string
 	table string
 	primary string
 	scheme map[string]string
@@ -120,7 +122,7 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 }
 
 func (O *Orm) open(){
-	db, err := sql.Open("mysql", "root:123456@tcp(localhost:3306)/dev_xinzhanghu")
+	db, err := sql.Open("mysql", O.dsn)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -319,14 +321,16 @@ log.Println(dbtag)
 	return O
 }
 func (O *Orm) Init(table string, dbtag string) *Orm {
+	O.dbname = Dbname(dbtag)
+	O.dsn    = Dsn(dbtag)
 	O.table  = "information_schema.columns"
 	O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
 	columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
-				Where("TABLE_SCHEMA","dev_xinzhanghu").
+				Where("TABLE_SCHEMA",O.dbname).
 				Where("TABLE_NAME", table).
 				Limit(200).
 				Select()
-
+//====dbname.table 缓存 scheme,primary
 	var scheme = map[string]string{}
 	var primary string
 	for _,r := range columns {
@@ -343,9 +347,9 @@ func (O *Orm) Init(table string, dbtag string) *Orm {
 
 	log.Println("初始化成功\t表：", table, "\t字段：", len(scheme), "\t主键：", primary)
 
-	O.table   = table
-	O.scheme  = scheme
-	O.primary = primary
+	O.table        = table
+	O.scheme       = scheme
+	O.primary      = primary
 	O.selectFields = ""
 	O.selectConds  = []string{}
 	O.selectParams = []interface{}{}
