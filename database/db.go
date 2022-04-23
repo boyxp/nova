@@ -1,16 +1,18 @@
 package database
 
 import "sync"
+import "unicode"
+import "runtime"
+import "strings"
 
-var dsnMap sync.Map
-var dbnameMap sync.Map
+var cache sync.Map
 func Register(tag string, dbname string, dsn string) {
-	dsnMap.Store(tag, dsn)
-	dbnameMap.Store(tag, dbname)
+	cache.Store("dsn."+tag, dsn)
+	cache.Store("dbname."+tag, dbname)
 }
 
 func Dsn(tag string) string {
-	value, ok := dsnMap.Load(tag)
+	value, ok := cache.Load("dsn."+tag)
     if !ok {
         panic("dsn配置不存在:"+tag)
     }
@@ -21,7 +23,7 @@ func Dsn(tag string) string {
 }
 
 func Dbname(tag string) string {
-	value, ok := dbnameMap.Load(tag)
+	value, ok := cache.Load("dbname."+tag)
 	if !ok {
 		panic("dbname配置不存在:"+tag)
 	}
@@ -29,4 +31,43 @@ func Dbname(tag string) string {
 	dbname, _ := value.(string)
 
 	return dbname
+}
+
+func NewOrm(tag ...string) *Orm {
+	_, file, _, _ := runtime.Caller(1)
+	path  := strings.Split(file, "/")
+	model := strings.Trim(path[len(path)-1], ".go")
+
+	var dbtag string
+	if len(tag)==0 {
+		dbtag = "database"
+	} else {
+		dbtag = tag[0]
+	}
+
+	var table string
+	value, ok := cache.Load(dbtag+"."+model)
+    if !ok {
+		var buf strings.Builder
+		for i, l := range model {
+			if unicode.IsUpper(l) {
+				if i != 0 {
+  					buf.WriteString("_")
+				}
+ 				buf.WriteString(string(unicode.ToLower(l)))
+			} else {
+ 				buf.WriteString(string(l))
+			}
+		}
+
+		table = buf.String()
+		cache.Store(dbtag+"."+model, table)
+    } else {
+    	table, _ = value.(string)
+    }
+
+	O := &Orm{}
+	O = O.Init(table, dbtag)
+
+	return O
 }
