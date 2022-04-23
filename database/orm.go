@@ -1,5 +1,6 @@
 package database
 
+import "log"
 import "unicode"
 import "runtime"
 import "strings"
@@ -307,6 +308,7 @@ func (O *Orm) Init(table string) *Orm {
 	columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
 				Where("TABLE_SCHEMA","dev_xinzhanghu").
 				Where("TABLE_NAME", table).
+				Limit(200).
 				Select()
 
 	var scheme = map[string]string{}
@@ -323,12 +325,15 @@ func (O *Orm) Init(table string) *Orm {
 		}
 	}
 
+	log.Println("初始化成功\t表：", table, "\t字段：", len(scheme), "\t主键：", primary)
+
 	O.table   = table
 	O.scheme  = scheme
 	O.primary = primary
 	O.selectFields = ""
 	O.selectConds  = []string{}
 	O.selectParams = []interface{}{}
+	O.selectLimit  = 20
 
 	return O
 }
