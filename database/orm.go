@@ -313,8 +313,12 @@ func (O *Orm) Init(table string) {
 	var scheme = map[string]string{}
 	var primary string
 	for _,r := range columns {
-		log.Println(r["COLUMN_NAME"], "=", r["COLUMN_DEFAULT"])
-		scheme[r["COLUMN_NAME"]] = r["IS_NULLABLE"]
+		if r["IS_NULLABLE"]=="NO" && r["COLUMN_DEFAULT"]=="NULL" {
+			scheme[r["COLUMN_NAME"]] = "NOTNULL"
+		} else {
+			scheme[r["COLUMN_NAME"]] = "NULL"
+		}
+
 		if r["COLUMN_KEY"]=="PRI" {
 			primary = r["COLUMN_NAME"]
 		}
