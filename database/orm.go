@@ -22,8 +22,8 @@ type Orm struct {
 }
 
 func (O *Orm) Init(dbtag string, table string) *Orm {
-	O.dbname = Dbname(dbtag)
 	O.dbtag  = dbtag
+	O.dbname = Dbname(dbtag)
 
 	scheme, primary := O.getScheme(table)
 
