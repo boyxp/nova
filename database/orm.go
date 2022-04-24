@@ -10,6 +10,7 @@ type Orm struct {
 	table string
 	primary string
 	scheme map[string]string
+	allFields []string
 
 	selectFields string
 	selectConds []string
@@ -25,11 +26,12 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbtag  = dbtag
 	O.dbname = Dbname(dbtag)
 
-	scheme, primary := O.getScheme(table)
+	scheme, primary , allFields := O.getScheme(table)
 
 	O.table        = table
 	O.scheme       = scheme
 	O.primary      = primary
+	O.allFields    = allFields
 	O.selectFields = ""
 	O.selectConds  = []string{}
 	O.selectParams = []interface{}{}
@@ -460,7 +462,7 @@ func (O *Orm) selectStmt() string {
 
 	sql.WriteString("SELECT ")
 	if O.selectFields == "" {
-		sql.WriteString("* ")
+		sql.WriteString(strings.Join(O.allFields, ",")+" ")
 	} else {
 		if strings.Contains(strings.ToTitle(O.selectFields), " COUNT(") && strings.Contains(O.selectFields, ",") && len(O.selectGroup)==0 {
 			panic("缺少聚合字段")
@@ -531,10 +533,7 @@ func (O *Orm) selectStmt() string {
 func (O *Orm) selectColumns() []string {
 	var columns []string
 	if O.selectFields == "" || O.selectFields=="*" {
-		for k,_ := range O.scheme {
-			columns = append(columns, k)
-		}
-		return columns
+		return O.allFields
 	}
 
 	if !strings.Contains(O.selectFields," ") {
@@ -604,9 +603,10 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	return sql.String(), params
 }
 
-func (O *Orm) getScheme(table string) (map[string]string, string) {
+func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
 	var primary string
 	var scheme = map[string]string{}
+	var allFields []string
 
 	value, ok := cache.Load("scheme."+O.dbname+"."+table)
     if !ok {
@@ -628,16 +628,21 @@ func (O *Orm) getScheme(table string) (map[string]string, string) {
 			if r["COLUMN_KEY"]=="PRI" {
 				primary = r["COLUMN_NAME"]
 			}
+
+			allFields = append(allFields, r["COLUMN_NAME"])
 		}
 
 		cache.Store("scheme."+O.dbname+"."+table, scheme)
 		cache.Store("primary."+O.dbname+"."+table, primary)
+		cache.Store("allFields."+O.dbname+"."+table, allFields)
 	} else {
-		scheme, _  = value.(map[string]string)
-		value, _  := cache.Load("primary."+O.dbname+"."+table)
-		primary, _ = value.(string)
+		scheme, _    = value.(map[string]string)
+		value1, _   := cache.Load("primary."+O.dbname+"."+table)
+		primary, _   = value1.(string)
+		value2, _   := cache.Load("allFields."+O.dbname+"."+table)
+		allFields, _ = value2.([]string)
 	}
 
-	return scheme, primary
+	return scheme, primary, allFields
 }
 
