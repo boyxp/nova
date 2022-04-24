@@ -284,8 +284,9 @@ func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 	}
 
 	_, ok := O.scheme[field]
-	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
-	if ok || !check {
+	check1 := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+	check2 := strings.Contains(" "+O.selectFields+",", " "+field+",")
+	if !ok && !check1 && !check2 {
 		panic(field+":过滤字段应为聚合别名")
 	}
 
