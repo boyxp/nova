@@ -6,7 +6,6 @@ import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 
 type Orm struct {
-	db *sql.DB
 	dbname string
 	dbtag string
 	table string
