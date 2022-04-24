@@ -67,7 +67,7 @@ func NewOrm(tag ...string) *Orm {
     }
 
 	O := &Orm{}
-	O = O.Init(table, dbtag)
+	O = O.Init(dbtag, table)
 
 	return O
 }

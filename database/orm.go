@@ -5,66 +5,66 @@ import "strconv"
 import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 
-	//o := Orm{table:"payment",primary:"payment_id", scheme:map[string]string{"payment_id":"int","company_id":"int","batch_id":"int","receive_name":"string","create_at":"timestamp","tax_mobile":"string"}}
+//o := (&Orm{}).Init("dev", "payment")
 
-	//普通列表查询
-	//result := o.Where("1").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("1").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","1").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id",">=","1").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","in",[]string{"1","2","3"}).Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is not","null").Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
-	//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
+//普通列表查询
+//result := o.Where("1").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("1").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","1").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id",">=","1").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1","2","3"}).Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is","null").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is not","null").Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
+//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
+//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
 
-	//聚合列表查询
-	//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+//聚合列表查询
+//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
 
-	//单条查询
-	//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
-	//for k,v := range result {
-	//	fmt.Println(k, v)
-	//}
+//单条查询
+//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
+//for k,v := range result {
+//	fmt.Println(k, v)
+//}
 
-	//单字段查询
-	//name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
-	//fmt.Println(name)
+//单字段查询
+//name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
+//fmt.Println(name)
 
-	//非聚合单项查询
-	//max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
-	//fmt.Println(max_id)
+//非聚合单项查询
+//max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
+//fmt.Println(max_id)
 
-	//min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
-	//fmt.Println(min_id)
+//min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
+//fmt.Println(min_id)
 
-	//复用查询条件
-	//query := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1"})
-	//name  := query.Value("receive_name")
-	//fmt.Println(name)
+//复用查询条件
+//query := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1"})
+//name  := query.Value("receive_name")
+//fmt.Println(name)
 
-	//row   := query.Find()
-	//fmt.Println(row)
+//row   := query.Find()
+//fmt.Println(row)
 
-	//count := query.Count()
-	//fmt.Println("count:",count)
+//count := query.Count()
+//fmt.Println("count:",count)
 
-	//sum := query.Sum("payment_id")
-	//fmt.Println("sum:",sum)
+//sum := query.Sum("payment_id")
+//fmt.Println("sum:",sum)
 
-	//list := query.Select()
-	//for k,v := range list {
-	//	fmt.Println(k, v)
-	//}
+//list := query.Select()
+//for k,v := range list {
+//	fmt.Println(k, v)
+//}
 
-	//删除
-	//dar := query.Delete()
-	//fmt.Println("delete:", dar)
+//删除
+//dar := query.Delete()
+//fmt.Println("delete:", dar)
 
-	//更新
-	//uar := o.Where("payment_id", "11").Update(map[string]string{"tax_mobile":"138888"})
-	//fmt.Println("update:", uar)
+//更新
+//uar := o.Where("payment_id", "11").Update(map[string]string{"tax_mobile":"138888"})
+//fmt.Println("update:", uar)
 
 type Orm struct {
 	db *sql.DB
@@ -277,7 +277,7 @@ func (O *Orm) Field(fields string) *Orm {
 	return O
 }
 
-func (O *Orm) Init(table string, dbtag string) *Orm {
+func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbname = Dbname(dbtag)
 	O.dsn    = Dsn(dbtag)
 
