@@ -4,6 +4,8 @@ import "sync"
 import "unicode"
 import "runtime"
 import "strings"
+import "database/sql"
+import _ "github.com/go-sql-driver/mysql"
 
 var cache sync.Map
 func Register(tag string, dbname string, dsn string) {
@@ -71,3 +73,14 @@ func NewOrm(tag ...string) *Orm {
 
 	return O
 }
+
+func Open(tag string) *sql.DB {
+	dsn     := Dsn(tag)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return db
+}
+

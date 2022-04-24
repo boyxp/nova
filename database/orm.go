@@ -9,6 +9,7 @@ type Orm struct {
 	db *sql.DB
 	dbname string
 	dsn string
+	dbtag string
 	table string
 	primary string
 	scheme map[string]string
@@ -26,6 +27,7 @@ type Orm struct {
 func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbname = Dbname(dbtag)
 	O.dsn    = Dsn(dbtag)
+	O.dbtag  = dbtag
 
 	scheme, primary := O.getScheme(table)
 
@@ -41,8 +43,8 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
-	O.open()
-	defer O.close()
+	db := Open(O.dbtag)
+	defer db.Close()
 
 	fields       := []string{}
 	placeholders := []string{}
@@ -54,7 +56,7 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 		values       = append(values, v)
 	}
 
-	stmt, err := O.db.Prepare("INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")")
+	stmt, err := db.Prepare("INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -74,11 +76,11 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 }
 
 func (O *Orm) Delete() int64 {
-	O.open()
-	defer O.close()
+	db := Open(O.dbtag)
+	defer db.Close()
 
 	sql := O.deleteStmt()
-	stmt, err := O.db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -98,8 +100,8 @@ func (O *Orm) Delete() int64 {
 }
 
 func (O *Orm) Update(data map[string]string) int64 {
-	O.open()
-	defer O.close()
+	db := Open(O.dbtag)
+	defer db.Close()
 
 	if len(data)==0 {
 		panic("没有更新字段")
@@ -107,7 +109,7 @@ func (O *Orm) Update(data map[string]string) int64 {
 
 	sql, params := O.updateStmt(data)
 
-	stmt, err := O.db.Prepare(sql)
+	stmt, err := db.Prepare(sql)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -335,11 +337,12 @@ func (O *Orm) Limit(limit int) *Orm {
 
 func (O *Orm) Select() []map[string]string {
 	var result []map[string]string
-	O.open()
-	defer O.close()
+
+	db := Open(O.dbtag)
+	defer db.Close()
 
 	stmt := O.selectStmt()
-	rows, err := O.db.Query(stmt, O.selectParams...)
+	rows, err := db.Query(stmt, O.selectParams...)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -607,19 +610,6 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	}
 
 	return sql.String(), params
-}
-
-func (O *Orm) open(){
-	db, err := sql.Open("mysql", O.dsn)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	O.db = db
-}
-
-func (O *Orm) close() {
-	O.db.Close()
 }
 
 func (O *Orm) getScheme(table string) (map[string]string, string) {
