@@ -3,9 +3,11 @@ package database
 import "testing"
 import "github.com/boyxp/nova/database"
 
-func _TestExec(t *testing.T) {
+func init() {
 	database.Register("database", "test", "root:123456@tcp(localhost:3306)/test")
+}
 
+func TestExec(t *testing.T) {
 	sql1 := "DROP TABLE IF EXISTS goods"
 	result1, err1 := database.Open("database").Exec(sql1)
 	if err1 != nil {
@@ -33,28 +35,128 @@ func _TestExec(t *testing.T) {
 	t.Log(result2)
 }
 
-//o := (&Orm{}).Init("dev", "payment")
+func TestInsert(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	O.Insert(map[string]interface{}{"name":"可口可乐","price":"100","detail":"...","category":"饮料"})
+	O.Insert(map[string]interface{}{"name":"小红帽","price":"200","detail":"...","category":"服装"})
+	O.Insert(map[string]interface{}{"name":"雪碧","price":"300","category":"饮料"})
+	O.Insert(map[string]interface{}{"name":"高跟鞋","price":"400","detail":"...","category":"服装"})
+	O.Insert(map[string]interface{}{"name":"芬达","price":"500","detail":"...","category":"饮料"})
+	O.Insert(map[string]interface{}{"name":"海魂衫","price":"600","category":"服装"})
+	O.Insert(map[string]interface{}{"name":"和其正","price":"700","detail":"...","category":"饮料"})
+	O.Insert(map[string]interface{}{"name":"领带","price":"800","detail":"...","category":"服装"})
+	O.Insert(map[string]interface{}{"name":"美年达","price":"900","category":"饮料"})
+	O.Insert(map[string]interface{}{"name":"呢子大衣","price":"1000","detail":"...","category":"服装"})
+}
+
+func TestSelectPrimary(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("1").Find()
+	_, ok := row["name"]
+	if ok {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectField(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Field("price").Where("1").Find()
+	_, ok := row["name"]
+	if !ok {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectEq(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("goods_id", "1").Find()
+	_, ok := row["name"]
+	if ok {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectGtEq(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("goods_id", ">=", "1").Find()
+	_, ok := row["name"]
+	if ok {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectIn(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	rows := O.Where("goods_id", "in", []string{"1","2","3"}).Select()
+	if len(rows)==3 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectNull(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("detail", "is", "null").Find()
+	if row["detail"]=="NULL" {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectNotNull(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("detail", "is not", "null").Find()
+	if row["detail"]!="NULL" {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectBetween(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	rows := O.Where("goods_id", "BETWEEN", []string{"0","3"}).Select()
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectExp(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("goods_id>? AND detail is not null AND category=?", "3", "服装").Find()
+	if len(row)>1 {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectLike(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	row := O.Where("name", "like", "%帽%").Find()
+	if len(row)>1 {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
+}
 
 //普通列表查询
-//result := o.Where("1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id",">=","1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1","2","3"}).Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is","null").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is not","null").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
-//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
 
 //聚合列表查询
 //result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
-
-//单条查询
-//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
-//for k,v := range result {
-//	fmt.Println(k, v)
-//}
 
 //单字段查询
 //name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
