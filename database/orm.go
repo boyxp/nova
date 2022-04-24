@@ -452,10 +452,6 @@ func (O *Orm) Count() int {
 	return result
 }
 
-func (O *Orm) Execute() {
-
-}
-
 
 
 
