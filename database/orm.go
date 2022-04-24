@@ -3,7 +3,6 @@ package database
 import "strings"
 import "strconv"
 import "database/sql"
-import _ "github.com/go-sql-driver/mysql"
 
 type Orm struct {
 	dbname string
