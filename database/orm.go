@@ -8,7 +8,6 @@ import _ "github.com/go-sql-driver/mysql"
 type Orm struct {
 	db *sql.DB
 	dbname string
-	dsn string
 	dbtag string
 	table string
 	primary string
@@ -26,7 +25,6 @@ type Orm struct {
 
 func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbname = Dbname(dbtag)
-	O.dsn    = Dsn(dbtag)
 	O.dbtag  = dbtag
 
 	scheme, primary := O.getScheme(table)
