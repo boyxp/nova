@@ -5,67 +5,6 @@ import "strconv"
 import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 
-//o := (&Orm{}).Init("dev", "payment")
-
-//普通列表查询
-//result := o.Where("1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id",">=","1").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1","2","3"}).Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is","null").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("tax_mobile","is not","null").Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id","BETWEEN", []string{"0","3"}).Select()
-//result := o.Field("company_id,receive_name,tax_mobile").Where("company_id in (?,?) and batch_id=?", "1","2","0").Select()
-//result := o.Field("payment_id,company_id,receive_name,tax_mobile").Where("receive_name","like","%尔%").Order("payment_id","desc").Page(1).Limit(5).Select()
-
-//聚合列表查询
-//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
-
-//单条查询
-//result := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Find()
-//for k,v := range result {
-//	fmt.Println(k, v)
-//}
-
-//单字段查询
-//name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
-//fmt.Println(name)
-
-//非聚合单项查询
-//max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
-//fmt.Println(max_id)
-
-//min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
-//fmt.Println(min_id)
-
-//复用查询条件
-//query := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1"})
-//name  := query.Value("receive_name")
-//fmt.Println(name)
-
-//row   := query.Find()
-//fmt.Println(row)
-
-//count := query.Count()
-//fmt.Println("count:",count)
-
-//sum := query.Sum("payment_id")
-//fmt.Println("sum:",sum)
-
-//list := query.Select()
-//for k,v := range list {
-//	fmt.Println(k, v)
-//}
-
-//删除
-//dar := query.Delete()
-//fmt.Println("delete:", dar)
-
-//更新
-//uar := o.Where("payment_id", "11").Update(map[string]string{"tax_mobile":"138888"})
-//fmt.Println("update:", uar)
-
 type Orm struct {
 	db *sql.DB
 	dbname string
@@ -82,6 +21,23 @@ type Orm struct {
 	selectOrder []string
 	selectGroup []string
 	selectHaving string
+}
+
+func (O *Orm) Init(dbtag string, table string) *Orm {
+	O.dbname = Dbname(dbtag)
+	O.dsn    = Dsn(dbtag)
+
+	scheme, primary := O.getScheme(table)
+
+	O.table        = table
+	O.scheme       = scheme
+	O.primary      = primary
+	O.selectFields = ""
+	O.selectConds  = []string{}
+	O.selectParams = []interface{}{}
+	O.selectLimit  = 20
+
+	return O
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
@@ -117,19 +73,6 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 	return id
 }
 
-func (O *Orm) open(){
-	db, err := sql.Open("mysql", O.dsn)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	O.db = db
-}
-
-func (O *Orm) close() {
-	O.db.Close()
-}
-
 func (O *Orm) Delete() int64 {
 	O.open()
 	defer O.close()
@@ -153,27 +96,6 @@ func (O *Orm) Delete() int64 {
 
 	return ar
 }
-func (O *Orm) deleteStmt() string {
-	var sql strings.Builder
-
-	sql.WriteString("DELETE FROM ")
-	sql.WriteString(O.table)
-	if len(O.selectConds)>0 {
-		sql.WriteString(" WHERE ")
-		sql.WriteString(strings.Join(O.selectConds, " AND "))
-		sql.WriteString(" ")
-	}
-
-	if O.selectLimit==0 {
-		sql.WriteString("LIMIT 20")
-	} else {
-		sql.WriteString("LIMIT ")
-		sql.WriteString(strconv.Itoa(O.selectLimit))
-	}
-
-	return sql.String()
-}
-
 
 func (O *Orm) Update(data map[string]string) int64 {
 	O.open()
@@ -203,131 +125,10 @@ func (O *Orm) Update(data map[string]string) int64 {
 
 	return ar
 }
-func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
-	var sql strings.Builder
-	var params []interface{}
-
-	sql.WriteString("UPDATE ")
-	sql.WriteString(O.table)
-	sql.WriteString(" SET ")
-
-	for f,v := range data {
-		sql.WriteString(f+"=? ")
-		params = append(params, v)
-	}
-	params = append(params, O.selectParams...)
-
-	if len(O.selectConds)>0 {
-		sql.WriteString(" WHERE ")
-		sql.WriteString(strings.Join(O.selectConds, " AND "))
-		sql.WriteString(" ")
-	}
-
-	if O.selectLimit==0 {
-		sql.WriteString("LIMIT 20")
-	} else {
-		sql.WriteString("LIMIT ")
-		sql.WriteString(strconv.Itoa(O.selectLimit))
-	}
-
-	return sql.String(), params
-}
-
-func (O *Orm) Execute() {
-
-}
-
-func (O *Orm) Sum(field string) int {
-	_, ok := O.scheme[field]
-	if !ok {
-		panic(field+":聚合字段不存在")
-	}
-
-	var result int
-	selectFields  := O.selectFields
-	O.selectFields = "sum("+field+") as aggs_sum"
-
-	total := O.Value("aggs_sum")
-	O.selectFields = selectFields
-	conv,err := strconv.Atoi(total)
-	if err == nil {
-		result = conv
-	}
-
-	return result
-}
-
-func (O *Orm) Count() int {
-	var result int
-	selectFields  := O.selectFields
-	O.selectFields = "count(*) as aggs_count"
-
-	total := O.Value("aggs_count")
-	O.selectFields = selectFields
-	conv,err := strconv.Atoi(total)
-	if err == nil {
-		result = conv
-	}
-
-	return result
-}
 
 func (O *Orm) Field(fields string) *Orm {
 	O.selectFields = fields
 	return O
-}
-
-func (O *Orm) Init(dbtag string, table string) *Orm {
-	O.dbname = Dbname(dbtag)
-	O.dsn    = Dsn(dbtag)
-
-	scheme, primary := O.getScheme(table)
-
-	O.table        = table
-	O.scheme       = scheme
-	O.primary      = primary
-	O.selectFields = ""
-	O.selectConds  = []string{}
-	O.selectParams = []interface{}{}
-	O.selectLimit  = 20
-
-	return O
-}
-func (O *Orm) getScheme(table string) (map[string]string, string) {
-	var primary string
-	var scheme = map[string]string{}
-
-	value, ok := cache.Load("scheme."+O.dbname+"."+table)
-    if !ok {
-		O.table  = "information_schema.columns"
-		O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
-		columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
-				Where("TABLE_SCHEMA",O.dbname).
-				Where("TABLE_NAME", table).
-				Limit(200).
-				Select()
-
-		for _,r := range columns {
-			if r["IS_NULLABLE"]=="NO" && r["COLUMN_DEFAULT"]=="NULL" {
-				scheme[r["COLUMN_NAME"]] = "NOTNULL"
-			} else {
-				scheme[r["COLUMN_NAME"]] = "NULL"
-			}
-
-			if r["COLUMN_KEY"]=="PRI" {
-				primary = r["COLUMN_NAME"]
-			}
-		}
-
-		cache.Store("scheme."+O.dbname+"."+table, scheme)
-		cache.Store("primary."+O.dbname+"."+table, primary)
-	} else {
-		scheme, _  = value.(map[string]string)
-		value, _  := cache.Load("primary."+O.dbname+"."+table)
-		primary, _ = value.(string)
-	}
-
-	return scheme, primary
 }
 
 func (O *Orm) Where(conds ...interface{}) *Orm {
@@ -466,41 +267,6 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 	return O
 }
 
-func (O *Orm) Page(page int) *Orm {
-	if page < 1 {
-		panic("页码不应小于1")
-	}
-
-	O.selectPage = page
-	return O
-}
-
-func (O *Orm) Limit(limit int) *Orm {
-	if limit < 1 {
-		panic("每页条数不应小于1")
-	}
-
-	O.selectLimit = limit
-	return O
-}
-
-func (O *Orm) Order(field string, sort string) *Orm {
-	sort = strings.ToTitle(sort)
-	if sort!="DESC" && sort!="ASC" {
-		panic("排序类型只能是asc或desc")
-	}
-
-	_, ok := O.scheme[field]
-	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
-	if !ok && !check {
-		panic(field+":排序应为字段或聚合的别名")
-	}
-
-	O.selectOrder = append(O.selectOrder, field+" "+sort)
-
-	return O
-}
-
 func (O *Orm) Group(field string) *Orm {
 	_, ok := O.scheme[field]
 	if !ok {
@@ -529,6 +295,41 @@ func (O *Orm) Having(field string, opr string, criteria int) *Orm {
 
 	O.selectHaving = field+" "+opr+" "+strconv.Itoa(criteria)
 
+	return O
+}
+
+func (O *Orm) Order(field string, sort string) *Orm {
+	sort = strings.ToTitle(sort)
+	if sort!="DESC" && sort!="ASC" {
+		panic("排序类型只能是asc或desc")
+	}
+
+	_, ok := O.scheme[field]
+	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+	if !ok && !check {
+		panic(field+":排序应为字段或聚合的别名")
+	}
+
+	O.selectOrder = append(O.selectOrder, field+" "+sort)
+
+	return O
+}
+
+func (O *Orm) Page(page int) *Orm {
+	if page < 1 {
+		panic("页码不应小于1")
+	}
+
+	O.selectPage = page
+	return O
+}
+
+func (O *Orm) Limit(limit int) *Orm {
+	if limit < 1 {
+		panic("每页条数不应小于1")
+	}
+
+	O.selectLimit = limit
 	return O
 }
 
@@ -577,6 +378,88 @@ func (O *Orm) Select() []map[string]string {
 
 	return result
 }
+
+func (O *Orm) Find() map[string]string {
+	var result map[string]string 
+
+	selectPage   := O.selectPage
+	selectLimit  := O.selectLimit
+	O.selectPage  = 1
+	O.selectLimit = 1
+	list := O.Select()
+	O.selectPage  = selectPage
+	O.selectLimit = selectLimit
+
+	if len(list)>0 {
+		result = list[0]
+	}
+
+	return result
+}
+
+func (O *Orm) Value(field string) string {
+	selectFields := O.selectFields
+
+	_, ok := O.scheme[field]
+	if ok {
+		O.selectFields = field
+	} else if strings.Contains(" "+O.selectFields+" ", " "+field+" ") {
+	} else {
+		panic(field+":取值字段应为普通字段或聚合别名")
+	}
+
+	row := O.Find()
+	O.selectFields = selectFields
+	value, ok := row[field]
+	if ok {
+		return value
+	}
+
+	return ""
+}
+
+func (O *Orm) Sum(field string) int {
+	_, ok := O.scheme[field]
+	if !ok {
+		panic(field+":聚合字段不存在")
+	}
+
+	var result int
+	selectFields  := O.selectFields
+	O.selectFields = "sum("+field+") as aggs_sum"
+
+	total := O.Value("aggs_sum")
+	O.selectFields = selectFields
+	conv,err := strconv.Atoi(total)
+	if err == nil {
+		result = conv
+	}
+
+	return result
+}
+
+func (O *Orm) Count() int {
+	var result int
+	selectFields  := O.selectFields
+	O.selectFields = "count(*) as aggs_count"
+
+	total := O.Value("aggs_count")
+	O.selectFields = selectFields
+	conv,err := strconv.Atoi(total)
+	if err == nil {
+		result = conv
+	}
+
+	return result
+}
+
+func (O *Orm) Execute() {
+
+}
+
+
+
+
 func (O *Orm) selectStmt() string {
 	var sql strings.Builder
 
@@ -649,6 +532,7 @@ func (O *Orm) selectStmt() string {
 
 	return sql.String()
 }
+
 func (O *Orm) selectColumns() []string {
 	var columns []string
 	if O.selectFields == "" || O.selectFields=="*" {
@@ -674,42 +558,104 @@ func (O *Orm) selectColumns() []string {
 	return columns
 }
 
-func (O *Orm) Find() map[string]string {
-	var result map[string]string 
+func (O *Orm) deleteStmt() string {
+	var sql strings.Builder
 
-	selectPage   := O.selectPage
-	selectLimit  := O.selectLimit
-	O.selectPage  = 1
-	O.selectLimit = 1
-	list := O.Select()
-	O.selectPage  = selectPage
-	O.selectLimit = selectLimit
-
-	if len(list)>0 {
-		result = list[0]
+	sql.WriteString("DELETE FROM ")
+	sql.WriteString(O.table)
+	if len(O.selectConds)>0 {
+		sql.WriteString(" WHERE ")
+		sql.WriteString(strings.Join(O.selectConds, " AND "))
+		sql.WriteString(" ")
 	}
 
-	return result
+	if O.selectLimit==0 {
+		sql.WriteString("LIMIT 20")
+	} else {
+		sql.WriteString("LIMIT ")
+		sql.WriteString(strconv.Itoa(O.selectLimit))
+	}
+
+	return sql.String()
 }
 
-func (O *Orm) Value(field string) string {
-	selectFields := O.selectFields
+func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
+	var sql strings.Builder
+	var params []interface{}
 
-	_, ok := O.scheme[field]
-	if ok {
-		O.selectFields = field
-	} else if strings.Contains(" "+O.selectFields+" ", " "+field+" ") {
+	sql.WriteString("UPDATE ")
+	sql.WriteString(O.table)
+	sql.WriteString(" SET ")
+
+	for f,v := range data {
+		sql.WriteString(f+"=? ")
+		params = append(params, v)
+	}
+	params = append(params, O.selectParams...)
+
+	if len(O.selectConds)>0 {
+		sql.WriteString(" WHERE ")
+		sql.WriteString(strings.Join(O.selectConds, " AND "))
+		sql.WriteString(" ")
+	}
+
+	if O.selectLimit==0 {
+		sql.WriteString("LIMIT 20")
 	} else {
-		panic(field+":取值字段应为普通字段或聚合别名")
+		sql.WriteString("LIMIT ")
+		sql.WriteString(strconv.Itoa(O.selectLimit))
 	}
 
-	row := O.Find()
-	O.selectFields = selectFields
-	value, ok := row[field]
-	if ok {
-		return value
+	return sql.String(), params
+}
+
+func (O *Orm) open(){
+	db, err := sql.Open("mysql", O.dsn)
+	if err != nil {
+		panic(err.Error())
 	}
 
-	return ""
+	O.db = db
+}
+
+func (O *Orm) close() {
+	O.db.Close()
+}
+
+func (O *Orm) getScheme(table string) (map[string]string, string) {
+	var primary string
+	var scheme = map[string]string{}
+
+	value, ok := cache.Load("scheme."+O.dbname+"."+table)
+    if !ok {
+		O.table  = "information_schema.columns"
+		O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
+		columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
+				Where("TABLE_SCHEMA",O.dbname).
+				Where("TABLE_NAME", table).
+				Limit(200).
+				Select()
+
+		for _,r := range columns {
+			if r["IS_NULLABLE"]=="NO" && r["COLUMN_DEFAULT"]=="NULL" {
+				scheme[r["COLUMN_NAME"]] = "NOTNULL"
+			} else {
+				scheme[r["COLUMN_NAME"]] = "NULL"
+			}
+
+			if r["COLUMN_KEY"]=="PRI" {
+				primary = r["COLUMN_NAME"]
+			}
+		}
+
+		cache.Store("scheme."+O.dbname+"."+table, scheme)
+		cache.Store("primary."+O.dbname+"."+table, primary)
+	} else {
+		scheme, _  = value.(map[string]string)
+		value, _  := cache.Load("primary."+O.dbname+"."+table)
+		primary, _ = value.(string)
+	}
+
+	return scheme, primary
 }
 
