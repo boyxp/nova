@@ -153,47 +153,105 @@ func TestSelectLike(t *testing.T) {
 	}
 }
 
-//普通列表查询
+func TestSelectGroup(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	rows := O.Field("count(*) as num,category").
+			Where("goods_id", ">", "0").
+			Group("category").
+			Having("num",">",1).
+			Select()
 
-//聚合列表查询
-//result := o.Field("company_id,count(*) as total").Where("tax_mobile","is","null").Group("company_id").Having("total",">",1).Select()
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
 
-//单字段查询
-//name := o.Field("company_id  ,  receive_name,tax_mobile").Where("tax_mobile","is","null").Value("receive_name")
-//fmt.Println(name)
+func TestSelectValue(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	name := O.Field("name").Where("goods_id", "1").Value("name")
+	if len(name)>1 {
+		t.Log(name)
+	} else {
+		t.Fail()
+	}
+}
 
-//非聚合单项查询
-//max_id := o.Field("MAX(payment_id) as max_id").Where("tax_mobile","is","null").Value("max_id")
-//fmt.Println(max_id)
+func TestSelectMaxMin(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	max_id := O.Field("MAX(goods_id) as max_id").Value("max_id")
+	if max_id!="" {
+		t.Log(max_id)
+	} else {
+		t.Fail()
+	}
 
-//min_id := o.Field("MIN(payment_id) as min_id").Where("tax_mobile","is","null").Value("min_id")
-//fmt.Println(min_id)
+	min_id := O.Field("MIN(goods_id) as min_id").Value("min_id")
+	if min_id!="" {
+		t.Log(min_id)
+	} else {
+		t.Fail()
+	}
+}
 
-//复用查询条件
-//query := o.Field("company_id,receive_name,tax_mobile").Where("company_id","in",[]string{"1"})
-//name  := query.Value("receive_name")
-//fmt.Println(name)
+func TestSelectQueryReuse(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
 
-//row   := query.Find()
-//fmt.Println(row)
+	query := O.Where("detail", "is not", "null")
 
-//count := query.Count()
-//fmt.Println("count:",count)
+	rows := query.Select()
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
 
-//sum := query.Sum("payment_id")
-//fmt.Println("sum:",sum)
+	row := query.Find()
+	if len(row)>1 {
+		t.Log(row)
+	} else {
+		t.Fail()
+	}
 
-//list := query.Select()
-//for k,v := range list {
-//	fmt.Println(k, v)
-//}
+	name := query.Value("name")
+	if len(name)>1 {
+		t.Log(name)
+	} else {
+		t.Fail()
+	}
 
-//删除
-//dar := query.Delete()
-//fmt.Println("delete:", dar)
+	count := query.Count()
+	if count>1 {
+		t.Log(count)
+	} else {
+		t.Fail()
+	}
 
-//更新
-//uar := o.Where("payment_id", "11").Update(map[string]string{"tax_mobile":"138888"})
-//fmt.Println("update:", uar)
+	sum := query.Sum("price")
+	if sum>100 {
+		t.Log(sum)
+	} else {
+		t.Fail()
+	}
+}
 
+func TestUpdate(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口"})
+	if af > 0 {
+		t.Log(af)
+	} else {
+		t.Fail()
+	}
+}
 
+func TestDelete(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	af := O.Where("goods_id", "1").Delete()
+	if af > 0 {
+		t.Log(af)
+	} else {
+		t.Fail()
+	}
+}
