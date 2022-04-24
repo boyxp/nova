@@ -8,6 +8,8 @@ import "github.com/boyxp/nova/router"
 import "github.com/boyxp/nova/exception"
 import "github.com/boyxp/nova/response"
 
+import "api/model"
+
 func init() {
    router.Register(&User{})
 }
@@ -15,6 +17,11 @@ func init() {
 type User struct {}
 func (C *User) Login(name string, age uint64, check bool, balance float64, num int64, portrait string) interface{} {
 	log.Println("姓名：",name,"年龄：",age,"检查：",check,"余额：",balance,"数量：",num)
+
+orders := model.Payment().Field("*").Select()
+for _,r := range orders {
+	log.Println(r)
+}
 
 	if age<18 {
 		//逻辑异常
