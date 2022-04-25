@@ -18,11 +18,6 @@ type User struct {}
 func (C *User) Login(name string, age uint64, check bool, balance float64, num int64, portrait string) interface{} {
 	log.Println("姓名：",name,"年龄：",age,"检查：",check,"余额：",balance,"数量：",num)
 
-orders := model.Payment().Field("*").Select()
-for _,r := range orders {
-	log.Println(r)
-}
-
 	if age<18 {
 		//逻辑异常
 		exception.New("年龄最小18岁", 1001)
@@ -97,6 +92,16 @@ func (C *User) Download() {
 func (C *User) Jump() {
 	d := response.Redirect{}
 	d.Render("https://www.baidu.com")
+}
+
+func (C *User) Add() map[string]interface{} {
+	user_id := model.User().Insert(map[string]interface{}{"user_name":"xiaoming","password":"123"})
+	return map[string]interface{}{"user_id":user_id}
+}
+
+func (C *User) List() []map[string]string {
+	list := model.User().Select()
+	return list
 }
 
 func (C *User) private() {
