@@ -27,8 +27,28 @@ go get github.com/boyxp/nova/database@v0.0.0-20220418020310-86ca24efa0b7
 go get github.com/boyxp/nova@v0.0.0-20220418020310-86ca24efa0b7
 
 echo "当前项目目录为 _demo"
-echo "启动监听端口：9800...(可按 Ctrl+c 终止进程)"
-echo "浏览器打开：127.0.0.1:9800/user/hello"
 
-go run api.go
+
+if [ "$(uname)" == "Darwin" ]; then
+	echo "启动监听端口：9800..."
+	go run api.go > run.log &
+	echo "即将打开:http://127.0.0.1:9800/user/hello"
+	sleep 3
+
+    open 'http://127.0.0.1:9800/user/hello'
+
+    echo "关闭进程命令：sh manage.sh stop"
+
+else
+	echo "启动监听端口：9800...(可按 Ctrl+c 终止进程)"
+    echo "\033[32m浏览器打开以下地址
+
+127.0.0.1:9800/user/hello
+
+        \033[0m"
+
+    go run api.go
+fi
+
+
 
