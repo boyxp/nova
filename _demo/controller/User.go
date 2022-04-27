@@ -15,6 +15,11 @@ func init() {
 }
 
 type User struct {}
+
+func (C *User) Hello() map[string]string {
+	return map[string]string{"Item1":"1、端口和数据库配置在.env","Item2":"2、控制器目录为controller","Item3":"3、模型目录为model","Item4":"4、更多示例见User控制器"}
+}
+
 func (C *User) Login(name string, age uint64, check bool, balance float64, num int64, portrait string) interface{} {
 	log.Println("姓名：",name,"年龄：",age,"检查：",check,"余额：",balance,"数量：",num)
 
@@ -79,31 +84,37 @@ func (C *User) Login(name string, age uint64, check bool, balance float64, num i
 	return map[string]interface{}{"total":len(list),"list":list}
 }
 
+//返回其他结构
 func (C *User) Logout() map[string]string {
 	fmt.Println("bye")
 	return map[string]string{"res":"bye"}
 }
 
+//文件下载
 func (C *User) Download() {
 	d := response.Download{}
 	d.Render("文件.log")
 }
 
+//重定向
 func (C *User) Jump() {
 	d := response.Redirect{}
 	d.Render("https://www.baidu.com")
 }
 
+//数据库添加操作
 func (C *User) Add() map[string]interface{} {
 	user_id := model.User().Insert(map[string]interface{}{"user_name":"xiaoming","password":"123"})
 	return map[string]interface{}{"user_id":user_id}
 }
 
+//数据库列表读取
 func (C *User) List() []map[string]string {
 	list := model.User().Select()
 	return list
 }
 
+//小写开头私有方法不可通过路由访问
 func (C *User) private() {
 	fmt.Println("private")
 }
