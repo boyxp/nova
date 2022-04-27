@@ -45,9 +45,10 @@ sh manage.sh stop
 进入 controller 目录，创建struct
 ```go
 package controller
+
 type Hello struct {}
 func (h *Hello) Hi(name string) map[string]string {
-	return map[string]string{"name":name}
+	return map[string]string{"name":"hello "+name}
 }
 ```
 
@@ -55,16 +56,22 @@ func (h *Hello) Hi(name string) map[string]string {
 
 ```go
 package controller
+
 import "github.com/boyxp/nova/router"
 func init() {
    router.Register(&Hello{})
 }
+
 type Hello struct {}
 func (h *Hello) Hi(name string) map[string]string {
-	return map[string]string{"name":name}
+	return map[string]string{"name":"hello "+name}
 }
 ```
 重启进程
 ```bash
 sh manage.sh restart
+```
+POST请求接口
+```bash
+curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
 ```
