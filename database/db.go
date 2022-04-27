@@ -1,5 +1,7 @@
 package database
 
+import "log"
+import "os"
 import "sync"
 import "unicode"
 import "runtime"
@@ -10,7 +12,8 @@ import _ "github.com/go-sql-driver/mysql"
 var cache sync.Map
 func Register(tag string, dbname string, dsn string) {
 	if tag=="database" && (dbname=="" || dsn=="") {
-		panic(".env配置文件不存在或database.dbname和database.dsn未设置")
+		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或database.dbname和database.dsn未设置")
+		os.Exit(1)
 	}
 
 	cache.Store("dsn."+tag, dsn)
