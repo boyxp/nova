@@ -13,6 +13,7 @@ import "github.com/boyxp/nova/request"
 import "github.com/boyxp/nova/response"
 import "github.com/boyxp/nova/register"
 import "github.com/boyxp/nova/exception"
+import _ "github.com/joho/godotenv/autoload"
 
 func Listen(port string) *App {
 	return &App{port, &request.Form{}, &response.Json{}}
