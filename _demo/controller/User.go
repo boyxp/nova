@@ -17,7 +17,7 @@ func init() {
 type User struct {}
 
 func (C *User) Hello() map[string]string {
-	return map[string]string{"Item1":"1、端口和数据库配置在.env","Item2":"2、控制器目录为controller","Item3":"3、模型目录为model","Item4":"4、更多示例见User控制器"}
+	return map[string]string{"Item1":"1、端口和数据库配置在.env","Item2":"2、控制器目录为controller","Item3":"3、模型目录为model","Item4":"4、进程管理使用manage.sh","Item5":"5、更多示例见User控制器",}
 }
 
 func (C *User) Login(name string, age uint64, check bool, balance float64, num int64, portrait string) interface{} {
