@@ -1,0 +1,8 @@
+.idea
+.DS_Store
+pid
+go.sum
+manage.sh
+.env
+*.log
+
