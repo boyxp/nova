@@ -58,7 +58,7 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	match := router.Match(r.RequestURI)
 	if match != true {
-		exception.New("路由地址错误", 100)
+		exception.New("路由地址错误:"+r.RequestURI, 100)
 	}
 
 	params := A.Request.Parse(r)
