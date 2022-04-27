@@ -22,9 +22,9 @@ echo "下载go依赖..."
 
 go mod download github.com/boyxp/nova
 
-go get github.com/boyxp/nova/database@v0.0.0-20220418020310-86ca24efa0b7
+go get github.com/boyxp/nova/database@latest
 
-go get github.com/boyxp/nova@v0.0.0-20220418020310-86ca24efa0b7
+go get github.com/boyxp/nova@latest
 
 echo "当前项目目录为 _demo"
 
