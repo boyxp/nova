@@ -9,6 +9,10 @@ import _ "github.com/go-sql-driver/mysql"
 
 var cache sync.Map
 func Register(tag string, dbname string, dsn string) {
+	if tag=="database" && (dbname=="" || dsn=="") {
+		panic(".env配置文件不存在或database.db和database.dsn未设置")
+	}
+
 	cache.Store("dsn."+tag, dsn)
 	cache.Store("dbname."+tag, dbname)
 }
