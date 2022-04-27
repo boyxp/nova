@@ -13,5 +13,30 @@
 * 低侵入性设计，现有struct一行代码即可对外服务
 * 一键安装快速上手
 
-## 快速上手
-> curl https://raw.githubusercontent.com/boyxp/nova/master/install.sh | sh
+## 安装
+```bash
+$ curl https://raw.githubusercontent.com/boyxp/nova/master/install.sh | sh
+```
+默认创建 _demo 目录，可以改名为项目目录，直接初始化git
+
+## 使用
+
+### 进程管理
+
+启动进程
+```bash
+sh manage.sh start
+```
+查看进程状态
+```bash
+sh manage.sh status
+```
+平滑重启（重启过程旧请求不中断）
+```bash
+sh manage.sh restart
+```
+
+停止进程（将在请求完成后退出）
+```bash
+sh manage.sh stop
+```
