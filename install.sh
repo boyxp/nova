@@ -26,7 +26,8 @@ go get github.com/boyxp/nova/database@v0.0.0-20220418020310-86ca24efa0b7
 
 go get github.com/boyxp/nova@v0.0.0-20220418020310-86ca24efa0b7
 
-echo "启动监听..."
+echo "当前项目目录为 _demo"
+echo "启动监听端口：9800...(可按 Ctrl+c 终止进程)"
 echo "浏览器打开：127.0.0.1:9800/user/hello"
 
 go run api.go
