@@ -611,26 +611,36 @@ func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
 
 	value, ok := cache.Load("scheme."+O.dbname+"."+table)
     if !ok {
-		O.table  = "information_schema.columns"
-		O.scheme = map[string]string{"TABLE_SCHEMA":"","TABLE_NAME":"","COLUMN_NAME":"","IS_NULLABLE":"","COLUMN_DEFAULT":"","COLUMN_KEY":""}
-		columns := O.Field("COLUMN_NAME,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_KEY").
-				Where("TABLE_SCHEMA",O.dbname).
-				Where("TABLE_NAME", table).
-				Limit(200).
-				Select()
+    	db := Open(O.dbtag)
+		defer db.Close()
 
-		for _,r := range columns {
-			if r["IS_NULLABLE"]=="NO" && r["COLUMN_DEFAULT"]=="NULL" {
-				scheme[r["COLUMN_NAME"]] = "NOTNULL"
+		rows, err := db.Query("describe "+table)
+		if err != nil {
+    		panic(err.Error())
+		}
+
+		for rows.Next() {
+			var rowField string
+			var rowType string
+			var rowNull string
+			var rowKey string
+			var rowDefault sql.RawBytes
+			var rowExtra string
+			if err := rows.Scan(&rowField, &rowType, &rowNull, &rowKey, &rowDefault, &rowExtra); err != nil {
+        		panic(err.Error())
+    		}
+
+			if rowNull=="NO" && rowDefault==nil {
+				scheme[rowField] = "NOTNULL"
 			} else {
-				scheme[r["COLUMN_NAME"]] = "NULL"
+				scheme[rowField] = "NULL"
 			}
 
-			if r["COLUMN_KEY"]=="PRI" {
-				primary = r["COLUMN_NAME"]
+			if rowKey=="PRI" {
+				primary = rowField
 			}
 
-			allFields = append(allFields, r["COLUMN_NAME"])
+			allFields = append(allFields, rowField)
 		}
 
 		cache.Store("scheme."+O.dbname+"."+table, scheme)
