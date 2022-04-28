@@ -40,3 +40,38 @@ sh manage.sh restart
 ```bash
 sh manage.sh stop
 ```
+
+### 创建控制器
+进入 controller 目录，创建struct
+```go
+package controller
+
+type Hello struct {}
+func (h *Hello) Hi(name string) map[string]string {
+	return map[string]string{"name":"hello "+name}
+}
+```
+
+将struct注册到路由
+
+```go
+package controller
+
+import "github.com/boyxp/nova/router"
+func init() {
+   router.Register(&Hello{})
+}
+
+type Hello struct {}
+func (h *Hello) Hi(name string) map[string]string {
+	return map[string]string{"name":"hello "+name}
+}
+```
+重启进程
+```bash
+sh manage.sh restart
+```
+POST请求接口
+```bash
+curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
+```
