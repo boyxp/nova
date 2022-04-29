@@ -33,9 +33,6 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 }
 
 func (O *Orm) Insert(data map[string]interface{}) int64 {
-	db := Open(O.dbtag)
-	defer db.Close()
-
 	fields       := []string{}
 	placeholders := []string{}
 	values       := []interface{}{}
@@ -46,16 +43,8 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 		values       = append(values, v)
 	}
 
-	stmt, err := db.Prepare("INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(values...)
-	if err != nil {
-		panic(err.Error())
-	}
+	_sql := "INSERT INTO "+O.table+" ("+strings.Join(fields, ",")+") VALUES("+strings.Join(placeholders, ",")+")"
+	res  := O.execute(_sql, values)
 
 	id, err := res.LastInsertId()
 	if err != nil {
@@ -66,20 +55,8 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 }
 
 func (O *Orm) Delete() int64 {
-	db := Open(O.dbtag)
-	defer db.Close()
-
-	sql := O.deleteStmt()
-	stmt, err := db.Prepare(sql)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(O.selectParams...)
-	if err != nil {
-		panic(err.Error())
-	}
+	_sql := O.deleteStmt()
+	res  := O.execute(_sql, O.selectParams)
 
 	ar, err := res.RowsAffected()
 	if err != nil {
@@ -90,25 +67,13 @@ func (O *Orm) Delete() int64 {
 }
 
 func (O *Orm) Update(data map[string]string) int64 {
-	db := Open(O.dbtag)
-	defer db.Close()
-
 	if len(data)==0 {
 		panic("没有更新字段")
 	}
 
-	sql, params := O.updateStmt(data)
+	_sql, params := O.updateStmt(data)
 
-	stmt, err := db.Prepare(sql)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(params...)
-	if err != nil {
-		panic(err.Error())
-	}
+	res := O.execute(_sql, params)
 
 	ar, err := res.RowsAffected()
 	if err != nil {
@@ -314,6 +279,7 @@ func (O *Orm) Page(page int) *Orm {
 	}
 
 	O.selectPage = page
+
 	return O
 }
 
@@ -323,6 +289,7 @@ func (O *Orm) Limit(limit int) *Orm {
 	}
 
 	O.selectLimit = limit
+
 	return O
 }
 
@@ -594,6 +561,24 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	}
 
 	return sql.String(), params
+}
+
+func (O *Orm) execute(_sql string, values []interface{}) sql.Result {
+	db := Open(O.dbtag)
+	defer db.Close()
+
+	stmt, err := db.Prepare(_sql)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(values...)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return res
 }
 
 func (O *Orm) initScheme(table string) {
