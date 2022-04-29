@@ -25,17 +25,9 @@ type Orm struct {
 func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbtag  = dbtag
 	O.dbname = Dbname(dbtag)
+	O.table  = table
 
-	scheme, primary , allFields := O.getScheme(table)
-
-	O.table        = table
-	O.scheme       = scheme
-	O.primary      = primary
-	O.allFields    = allFields
-	O.selectFields = ""
-	O.selectConds  = []string{}
-	O.selectParams = []interface{}{}
-	O.selectLimit  = 20
+	O.initScheme(table)
 
 	return O
 }
@@ -604,7 +596,7 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	return sql.String(), params
 }
 
-func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
+func (O *Orm) initScheme(table string) {
 	var primary string
 	var scheme = map[string]string{}
 	var allFields []string
@@ -620,12 +612,9 @@ func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
 		}
 
 		for rows.Next() {
-			var rowField string
-			var rowType string
-			var rowNull string
-			var rowKey string
+			var rowField, rowType, rowNull, rowKey, rowExtra string
 			var rowDefault sql.RawBytes
-			var rowExtra string
+
 			if err := rows.Scan(&rowField, &rowType, &rowNull, &rowKey, &rowDefault, &rowExtra); err != nil {
         		panic(err.Error())
     		}
@@ -646,6 +635,7 @@ func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
 		cache.Store("scheme."+O.dbname+"."+table, scheme)
 		cache.Store("primary."+O.dbname+"."+table, primary)
 		cache.Store("allFields."+O.dbname+"."+table, allFields)
+
 	} else {
 		scheme, _    = value.(map[string]string)
 		value1, _   := cache.Load("primary."+O.dbname+"."+table)
@@ -654,6 +644,8 @@ func (O *Orm) getScheme(table string) (map[string]string, string, []string) {
 		allFields, _ = value2.([]string)
 	}
 
-	return scheme, primary, allFields
+	O.primary   = primary
+	O.scheme    = scheme
+	O.allFields = allFields
 }
 
