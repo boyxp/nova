@@ -27,10 +27,26 @@ type App struct {
 	Port string
 	Request request.Interface
 	Response response.Interface
+	middleware []func(next http.Handler) http.Handler
+}
+
+func (A *App) Use(next func(next http.Handler) http.Handler) *App {
+	A.middleware = append(A.middleware, next)
+	return A
+}
+
+func (A *App) Handle() http.Handler {
+   var handler http.Handler = A
+
+   for i:=len(A.middleware)-1;i>=0;i-- {
+      handler = A.middleware[i](handler)
+   }
+
+   return handler
 }
 
 func (A *App) Run() {
-	server  := endless.NewServer("localhost:"+A.Port, A)
+	server  := endless.NewServer("localhost:"+A.Port, A.Handle())
 	server.BeforeBegin = func(add string) {
 		pid := syscall.Getpid()
 		log.Println("pid:",pid)
@@ -77,15 +93,7 @@ func (A *App) SetResponse(res response.Interface) *App {
 	A.Response = res
 	return A
 }
-/*
-func (A *App) Before(route string, func(w http.ResponseWriter, r *http.Request)) *App {
 
-}
-
-func (A *App) After(route string, func(w http.ResponseWriter, r *http.Request)) *App {
-
-}
-*/
 //异常捕获
 func (A *App) Catch() {
         if err :=recover();err !=nil {
