@@ -6,5 +6,5 @@ import "github.com/boyxp/nova/response"
 import _ "api/controller"
 
 func main() {
-	nova.Listen(":8080").SetRequest(&request.Form{}).SetResponse(&response.Json{}).Run()
+	nova.Listen("9810").SetRequest(&request.Form{}).SetResponse(&response.Json{}).Run()
 }
