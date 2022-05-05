@@ -1,13 +1,14 @@
 package router
 
-import "reflect"
-import "strings"
+import "os"
 import "log"
+import "sync"
+import "regexp"
 import "strconv"
 import "runtime"
-import "os"
+import "reflect"
+import "strings"
 import "io/ioutil"
-import "regexp"
 import "github.com/boyxp/nova/exception"
 
 type Route struct {
@@ -20,7 +21,7 @@ type Route struct {
 var controllerPathMame string = "controller"
 
 //路由规则
-var routes = make(map[string]map[string]Route)
+var routes sync.Map
 
 //注册控制器
 func Register(controller interface{}) bool {
@@ -30,13 +31,15 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
+	//取得模型名称
 	idx := strings.Index(file, controllerPathMame)
 	if idx == -1 {
 		panic("控制器应存放到:"+controllerPathMame)
 	}
-
 	path :=strings.Replace(file[idx:], ".go", "", 1)
 	routeModule := strings.ToLower(path)
+
+
 
 	//反射控制器
 	v := reflect.ValueOf(controller)
@@ -58,16 +61,11 @@ func Register(controller interface{}) bool {
 	for i := 0; i < v.NumMethod(); i++ {
 		method := v.Method(i)
 		action := v.Type().Method(i).Name
-		routeAction := strings.ToLower(action)
 
 		//遍历方法参数取得参数类型
-		params := make([]reflect.Type, 0, v.NumMethod())
+		params := make([]reflect.Type, 0, method.Type().NumIn())
 		for j := 0; j < method.Type().NumIn(); j++ {
 			params = append(params, method.Type().In(j))
-		}
-
-		if routes[routeModule] == nil {
-			routes[routeModule] = make(map[string]Route)
 		}
 
 		//判断是否有参数名称
@@ -81,7 +79,8 @@ func Register(controller interface{}) bool {
 			panic(module + ":" + action + "参数匹配失败")
 		}
 
-		routes[routeModule][routeAction] = Route{method, params, names}
+		routeAction := strings.ToLower(action)
+		routes.Store(routeModule+"/"+routeAction, Route{method, params, names})
 	}
 
 	return true
@@ -143,18 +142,7 @@ func Match(path string) bool {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	fields := strings.Split(path, "/")
-	if len(fields) < 3 {
-		return false
-	}
-
-	k := controllerPathMame+"/"
-	for i := 1; i < len(fields)-1; i++ {
-		k += fields[i] + "/"
-	}
-
-	k = strings.TrimRight(k, "/")
-	_, ok := routes[k][fields[len(fields)-1]]
+	_, ok := routes.Load(controllerPathMame+path)
 
 	return ok
 }
@@ -166,19 +154,11 @@ func Invoke(path string, args map[string]string) interface{} {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	fields := strings.Split(path, "/")
-	if len(fields) < 3 {
-		return false
-	}
-	k := controllerPathMame+"/"
-	for i := 1; i < len(fields)-1; i++ {
-		k += fields[i] + "/"
-	}
-	k = strings.TrimRight(k, "/")
-	route, ok := routes[k][fields[len(fields)-1]]
+	value, ok := routes.Load(controllerPathMame+path)
 	if ok == false {
 		return false
 	}
+	route := value.(Route)
 
 	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
