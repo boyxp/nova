@@ -29,11 +29,15 @@ func Register(controller interface{}) bool {
 	if !ok {
 		return false
 	}
-	routeModule :=""
 
-	s:= file[strings.Index(file, controllerPathMame):]
-	files :=strings.Split(s,".")
-	routeModule = strings.ToLower(files[0])
+	idx := strings.Index(file, controllerPathMame)
+	if idx == -1 {
+		panic("控制器应存放到:"+controllerPathMame)
+	}
+
+	path :=strings.Replace(file[idx:], ".go", "", 1)
+	routeModule := strings.ToLower(path)
+
 	//反射控制器
 	v := reflect.ValueOf(controller)
 
@@ -41,6 +45,7 @@ func Register(controller interface{}) bool {
 	if v.NumMethod() == 0 {
 		return false
 	}
+
 	//取得控制器名称
 	module := reflect.TypeOf(controller).String()
 	if strings.Contains(module, ".") {
@@ -142,10 +147,12 @@ func Match(path string) bool {
 	if len(fields) < 3 {
 		return false
 	}
+
 	k := controllerPathMame+"/"
 	for i := 1; i < len(fields)-1; i++ {
 		k += fields[i] + "/"
 	}
+
 	k = strings.TrimRight(k, "/")
 	_, ok := routes[k][fields[len(fields)-1]]
 
