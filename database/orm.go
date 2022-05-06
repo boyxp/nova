@@ -38,6 +38,10 @@ func (O *Orm) Insert(data map[string]interface{}) int64 {
 	values       := []interface{}{}
 
 	for k,v := range data {
+		if _, ok := O.scheme[k];!ok {
+			panic(k+":字段不存在")
+		}
+
 		fields       = append(fields, k)
 		placeholders = append(placeholders, "?")
 		values       = append(values, v)
@@ -544,6 +548,10 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	sql.WriteString(" SET ")
 
 	for f,v := range data {
+		if _, ok := O.scheme[f];!ok {
+			panic(f+":字段不存在")
+		}
+
 		sql.WriteString(f+"=? ")
 		params = append(params, v)
 	}
