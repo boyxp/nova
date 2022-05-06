@@ -20,6 +20,7 @@ func Listen(port string) *App {
 		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置")
 		os.Exit(1)
 	}
+
 	return &App{Port:port, Request:&request.Form{}, Response:&response.Json{}}
 }
 
@@ -46,7 +47,7 @@ func (A *App) Handle() http.Handler {
 }
 
 func (A *App) Run() {
-	server  := endless.NewServer("localhost:"+A.Port, A.Handle())
+	server  := endless.NewServer(":"+A.Port, A.Handle())
 	server.BeforeBegin = func(add string) {
 		pid := syscall.Getpid()
 		log.Println("pid:",pid)
