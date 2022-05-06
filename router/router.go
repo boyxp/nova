@@ -45,6 +45,7 @@ func Register(controller interface{}) bool {
 	//取得路由模块名称
 	routeModule := strings.Replace(module, "*", "", -1)
 	routeModule  = strings.Replace(routeModule, controllerPathName+".", "", -1)
+	routeModule  = strings.Replace(routeModule, "main.", "", -1)
 	routeModule  = strings.Replace(routeModule, ".", "/", -1)
 	routeModule  = strings.ToLower(routeModule)
 
