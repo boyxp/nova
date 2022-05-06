@@ -3,8 +3,8 @@ package response
 import "os"
 import "fmt"
 import "path"
-import "net/http"
 import "net/url"
+import "net/http"
 import "github.com/boyxp/nova/register"
 
 type Download struct {}
@@ -27,6 +27,7 @@ func (D *Download) Render(result interface{}) {
 
 	w := register.GetResponseWriter()
 	r := register.GetRequest()
+
 	w.Header().Add("Content-Type", "application/octet-stream")
     w.Header().Add("Content-Disposition", "attachment; filename=\""+filename+"\"")
     w.Header().Add("Content-Length", string(filesize))
