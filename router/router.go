@@ -31,16 +31,6 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
-	//取得模型名称
-	idx := strings.Index(file, controllerPathName)
-	if idx == -1 {
-		panic("控制器应存放到:"+controllerPathName)
-	}
-	path :=strings.Replace(file[idx:], ".go", "", 1)
-	routeModule := strings.ToLower(path)
-
-
-
 	//反射控制器
 	v := reflect.ValueOf(controller)
 
@@ -49,8 +39,16 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
-	//取得控制器名称
+	//取得控制器完整名称
 	module := reflect.TypeOf(controller).String()
+
+	//取得路由模块名称
+	routeModule := strings.Replace(module, "*", "", -1)
+	routeModule  = strings.Replace(routeModule, controllerPathName+".", "", -1)
+	routeModule  = strings.Replace(routeModule, ".", "/", -1)
+	routeModule  = strings.ToLower(routeModule)
+
+	//取得控制器结构体名称
 	if strings.Contains(module, ".") {
 		module = module[strings.Index(module, ".")+1:]
 	}
@@ -80,7 +78,7 @@ func Register(controller interface{}) bool {
 		}
 
 		routeAction := strings.ToLower(action)
-		routes.Store(routeModule+"/"+routeAction, Route{method, params, names})
+		routes.Store("/"+routeModule+"/"+routeAction, Route{method, params, names})
 	}
 
 	return true
@@ -143,7 +141,7 @@ func Match(path string) bool {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	_, ok := routes.Load(controllerPathName+path)
+	_, ok := routes.Load(path)
 
 	return ok
 }
@@ -155,7 +153,7 @@ func Invoke(path string, args map[string]string) interface{} {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	value, ok := routes.Load(controllerPathName+path)
+	value, ok := routes.Load(path)
 	if ok == false {
 		return false
 	}
