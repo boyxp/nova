@@ -45,7 +45,7 @@ func Dbname(tag string) string {
 func NewOrm(tag ...string) *Orm {
 	_, file, _, _ := runtime.Caller(1)
 	path  := strings.Split(file, "/")
-	model := strings.Trim(path[len(path)-1], ".go")
+	model := strings.Replace(path[len(path)-1], ".go", "", 1)
 
 	var dbtag string
 	if len(tag)==0 {
