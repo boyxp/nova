@@ -4,7 +4,6 @@
 
 ## 特性
 
-
 * 支持平滑重启
 * 路由自动注册
 * 编码友好的Orm查询
@@ -14,7 +13,45 @@
 * 一键安装快速上手
 * 支持中间件
 
-## 安装
+## 快速上手
+创建 go.mod
+```bash
+module api
+
+go 1.17
+```
+安装依赖
+```bash
+go get github.com/boyxp/nova
+```
+创建 hello.go
+```go
+package main
+
+import "github.com/boyxp/nova"
+import "github.com/boyxp/nova/router"
+
+func main() {
+   router.Register(&Hello{})
+   nova.Listen("9800").Run()
+}
+
+type Hello struct {}
+func (h *Hello) Hi(name string) map[string]string {
+   return map[string]string{"name":"hello "+name}
+}
+```
+启动
+```bash
+go run hello.go &
+```
+
+POST请求接口
+```bash
+curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
+```
+
+## 初始化项目
 ```bash
 $ curl https://raw.githubusercontent.com/boyxp/nova/master/install.sh | sh
 ```
