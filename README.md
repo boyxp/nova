@@ -51,13 +51,13 @@ POST请求接口
 curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
 ```
 
-## 初始化项目
+## 项目模式
+
+### 初始化项目
 ```bash
-$ curl https://raw.githubusercontent.com/boyxp/nova/master/install.sh | sh
+$ curl https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
 ```
 默认创建 _demo 目录，可以改名为项目目录，直接初始化git
-
-## 使用
 
 ### 进程管理
 
@@ -80,17 +80,7 @@ sh manage.sh stop
 ```
 
 ### 创建控制器
-进入 controller 目录，创建struct
-```go
-package controller
-
-type Hello struct {}
-func (h *Hello) Hi(name string) map[string]string {
-	return map[string]string{"name":"hello "+name}
-}
-```
-
-将struct注册到路由
+进入 controller 目录，创建struct，并将struct注册到路由
 
 ```go
 package controller
@@ -105,6 +95,8 @@ func (h *Hello) Hi(name string) map[string]string {
 	return map[string]string{"name":"hello "+name}
 }
 ```
+
+### 测试运行
 重启进程
 ```bash
 sh manage.sh restart
