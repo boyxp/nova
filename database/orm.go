@@ -318,8 +318,8 @@ func (O *Orm) Select() []map[string]string {
 			panic(err.Error())
 		}
 
-		var record = map[string]string{}
 		var value string
+		var record = map[string]string{}
 		for i, col := range values {
 			if col == nil {
 				value = "NULL"
@@ -498,6 +498,7 @@ func (O *Orm) selectColumns() []string {
 
 	if !strings.Contains(O.selectFields," ") {
 		return strings.Split(O.selectFields,",")
+
 	} else {
 		for _,v := range strings.Split(O.selectFields,",") {
 			if !strings.Contains(v, " ") {
@@ -517,6 +518,7 @@ func (O *Orm) deleteStmt() string {
 
 	sql.WriteString("DELETE FROM ")
 	sql.WriteString(O.table)
+
 	if len(O.selectConds)>0 {
 		sql.WriteString(" WHERE ")
 		sql.WriteString(strings.Join(O.selectConds, " AND "))
@@ -583,8 +585,8 @@ func (O *Orm) execute(_sql string, values []interface{}) sql.Result {
 
 func (O *Orm) initScheme(table string) {
 	var primary string
-	var scheme = map[string]string{}
 	var allFields []string
+	var scheme = map[string]string{}
 
 	value, ok := cache.Load("scheme."+O.dbname+"."+table)
     if !ok {
@@ -633,4 +635,3 @@ func (O *Orm) initScheme(table string) {
 	O.scheme    = scheme
 	O.allFields = allFields
 }
-

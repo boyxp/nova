@@ -1,7 +1,7 @@
 package database
 
-import "log"
 import "os"
+import "log"
 import "sync"
 import "unicode"
 import "runtime"
@@ -10,6 +10,7 @@ import "database/sql"
 import _ "github.com/go-sql-driver/mysql"
 
 var cache sync.Map
+
 func Register(tag string, dbname string, dsn string) {
 	if tag=="database" && (dbname=="" || dsn=="") {
 		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或database.dbname和database.dsn未设置")
@@ -21,7 +22,7 @@ func Register(tag string, dbname string, dsn string) {
 }
 
 func Dsn(tag string) string {
-	value, ok := cache.Load("dsn."+tag)
+	value, ok := cache.Load("dsn."+tag);
     if !ok {
         panic("dsn配置不存在:"+tag)
     }
@@ -76,7 +77,7 @@ func NewOrm(tag ...string) *Orm {
     }
 
 	O := &Orm{}
-	O = O.Init(dbtag, table)
+	O  = O.Init(dbtag, table)
 
 	return O
 }
@@ -90,4 +91,3 @@ func Open(tag string) *sql.DB {
 
 	return db
 }
-
