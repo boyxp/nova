@@ -18,7 +18,7 @@ type Route struct {
 }
 
 //控制器目录名称（可修改）
-var controllerPathMame string = "controller"
+var controllerPathName string = "controller"
 
 //路由规则
 var routes sync.Map
@@ -32,9 +32,9 @@ func Register(controller interface{}) bool {
 	}
 
 	//取得模型名称
-	idx := strings.Index(file, controllerPathMame)
+	idx := strings.Index(file, controllerPathName)
 	if idx == -1 {
-		panic("控制器应存放到:"+controllerPathMame)
+		panic("控制器应存放到:"+controllerPathName)
 	}
 	path :=strings.Replace(file[idx:], ".go", "", 1)
 	routeModule := strings.ToLower(path)
@@ -107,16 +107,17 @@ func scan(path string, module string) map[string][]string {
 		panic("MustCompile err")
 	}
 
-	maps := map[string][]string{}
+	maps   := map[string][]string{}
 	result := reg.FindAllStringSubmatch(string(content), -1)
 	for _, match := range result {
 		action := match[1]
-		args := strings.TrimSpace(match[2])
+		args   := strings.TrimSpace(match[2])
 
 		if len(args) == 0 {
 			maps[action] = []string{}
+
 		} else {
-			sets := []string{}
+			sets  := []string{}
 			pairs := strings.Split(args, ",")
 			for i := 0; i < len(pairs); i++ {
 				pairs[i] = strings.TrimSpace(pairs[i])
@@ -142,7 +143,7 @@ func Match(path string) bool {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	_, ok := routes.Load(controllerPathMame+path)
+	_, ok := routes.Load(controllerPathName+path)
 
 	return ok
 }
@@ -154,7 +155,7 @@ func Invoke(path string, args map[string]string) interface{} {
 		path = path[0:strings.Index(path, "?")]
 	}
 
-	value, ok := routes.Load(controllerPathMame+path)
+	value, ok := routes.Load(controllerPathName+path)
 	if ok == false {
 		return false
 	}
@@ -172,54 +173,54 @@ func Invoke(path string, args map[string]string) interface{} {
 
 		switch route.args[i].Kind() {
 		case reflect.String:
-			argvs = append(argvs, reflect.ValueOf(param))
+							argvs = append(argvs, reflect.ValueOf(param))
 
 		case reflect.Int:
-			value, _ := strconv.Atoi(param)
-			argvs = append(argvs, reflect.ValueOf(value))
+							value, _ := strconv.Atoi(param)
+							argvs = append(argvs, reflect.ValueOf(value))
 		case reflect.Int8:
-			value, _ := strconv.ParseInt(param, 10, 8)
-			argvs = append(argvs, reflect.ValueOf(int8(value)))
+							value, _ := strconv.ParseInt(param, 10, 8)
+							argvs = append(argvs, reflect.ValueOf(int8(value)))
 		case reflect.Int16:
-			value, _ := strconv.ParseInt(param, 10, 16)
-			argvs = append(argvs, reflect.ValueOf(int16(value)))
+							value, _ := strconv.ParseInt(param, 10, 16)
+							argvs = append(argvs, reflect.ValueOf(int16(value)))
 		case reflect.Int32:
-			value, _ := strconv.ParseInt(param, 10, 32)
-			argvs = append(argvs, reflect.ValueOf(int32(value)))
+							value, _ := strconv.ParseInt(param, 10, 32)
+							argvs = append(argvs, reflect.ValueOf(int32(value)))
 		case reflect.Int64:
-			value, _ := strconv.ParseInt(param, 10, 64)
-			argvs = append(argvs, reflect.ValueOf(value))
+							value, _ := strconv.ParseInt(param, 10, 64)
+							argvs = append(argvs, reflect.ValueOf(value))
 
 		case reflect.Uint:
-			value, _ := strconv.ParseUint(param, 10, 32)
-			argvs = append(argvs, reflect.ValueOf(uint(value)))
+							value, _ := strconv.ParseUint(param, 10, 32)
+							argvs = append(argvs, reflect.ValueOf(uint(value)))
 		case reflect.Uint8:
-			value, _ := strconv.ParseUint(param, 10, 8)
-			argvs = append(argvs, reflect.ValueOf(uint8(value)))
+							value, _ := strconv.ParseUint(param, 10, 8)
+							argvs = append(argvs, reflect.ValueOf(uint8(value)))
 		case reflect.Uint16:
-			value, _ := strconv.ParseUint(param, 10, 16)
-			argvs = append(argvs, reflect.ValueOf(uint16(value)))
+							value, _ := strconv.ParseUint(param, 10, 16)
+							argvs = append(argvs, reflect.ValueOf(uint16(value)))
 		case reflect.Uint32:
-			value, _ := strconv.ParseUint(param, 10, 32)
-			argvs = append(argvs, reflect.ValueOf(uint32(value)))
+							value, _ := strconv.ParseUint(param, 10, 32)
+							argvs = append(argvs, reflect.ValueOf(uint32(value)))
 		case reflect.Uint64:
-			value, _ := strconv.ParseUint(param, 10, 64)
-			argvs = append(argvs, reflect.ValueOf(value))
+							value, _ := strconv.ParseUint(param, 10, 64)
+							argvs = append(argvs, reflect.ValueOf(value))
 
 		case reflect.Bool:
-			value, _ := strconv.ParseBool(param)
-			argvs = append(argvs, reflect.ValueOf(value))
+							value, _ := strconv.ParseBool(param)
+							argvs = append(argvs, reflect.ValueOf(value))
 
 		case reflect.Float32:
-			value, _ := strconv.ParseFloat(param, 32)
-			argvs = append(argvs, reflect.ValueOf(float32(value)))
+							value, _ := strconv.ParseFloat(param, 32)
+							argvs = append(argvs, reflect.ValueOf(float32(value)))
 		case reflect.Float64:
-			value, _ := strconv.ParseFloat(param, 64)
-			argvs = append(argvs, reflect.ValueOf(value))
+							value, _ := strconv.ParseFloat(param, 64)
+							argvs = append(argvs, reflect.ValueOf(value))
 
 		default:
-			log.Printf("Unsupported argument type:%s", route.args[i].Kind())
-			return false
+							log.Printf("Unsupported argument type:%s", route.args[i].Kind())
+							return false
 		}
 	}
 
