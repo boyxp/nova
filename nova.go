@@ -57,10 +57,12 @@ func (A *App) Run() {
 			log.Fatal(err)
 		}
 	}
+
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Println(err)
 	}
+
 	log.Println("Server stopped")
 
 	os.Exit(0)
