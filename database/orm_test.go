@@ -178,6 +178,17 @@ func TestSelectValue(t *testing.T) {
 	}
 }
 
+func TestSelectValues(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	names := O.Field("name").Values("name")
+
+	if len(names)>1 {
+		t.Log(names)
+	} else {
+		t.Fail()
+	}
+}
+
 func TestSelectMaxMin(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	max_id := O.Field("MAX(goods_id) as max_id").Value("max_id")
