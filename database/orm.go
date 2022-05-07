@@ -383,6 +383,20 @@ func (O *Orm) Value(field string) string {
 	return ""
 }
 
+func (O *Orm) Values(field string) []string {
+	var result []string
+
+	list := O.Select()
+
+	if len(list)>0 {
+		for _, v := range list {
+			result = append(result, v[field])
+		}
+	}
+
+	return result
+}
+
 func (O *Orm) Sum(field string) int {
 	_, ok := O.scheme[field]
 	if !ok {
