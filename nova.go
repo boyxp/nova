@@ -115,12 +115,12 @@ func (A *App) Catch() {
         		//写入精确异常日志
         		log.Println("系统异常代码：-100","系统异常内容：", err)
 
-                for i := 0; ; i++ {
+                for i := 2; ; i++ {
                     _, file, line, ok := runtime.Caller(i)
                     if !ok {
                         break
                     }
-                   	log.Println(i, file, line)
+                   	log.Println("\t", i-2, ")", file, line)
                 }
 
                 log.Println("\n")
