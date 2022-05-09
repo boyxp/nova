@@ -113,7 +113,7 @@ func (A *App) Catch() {
         		A.Response.Error("系统异常请联系管理员", -100)
 
         		//写入精确异常日志
-        		log.Println("系统异常代码：-100","系统异常内容：", err)
+        		log.Println("\033[31m系统异常代码：-100","系统异常内容：", err, "\033[0m")
 
                 for i := 2; ; i++ {
                     _, file, line, ok := runtime.Caller(i)
