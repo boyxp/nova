@@ -514,16 +514,34 @@ func (O *Orm) selectColumns() []string {
 		return O.allFields
 	}
 
-	if !strings.Contains(O.selectFields," ") {
-		return strings.Split(O.selectFields,",")
+	if !strings.Contains(O.selectFields," ") && !strings.Contains(O.selectFields, "(") {
+		return strings.Split(O.selectFields, ",")
 
 	} else {
-		for _,v := range strings.Split(O.selectFields,",") {
-			if !strings.Contains(v, " ") {
-				columns = append(columns, v)
-			} else {
-				tmp := strings.Split(strings.TrimSpace(v)," ")
-				columns = append(columns, tmp[len(tmp)-1])
+		if strings.Contains(O.selectFields, "(")==false {
+			for _,v := range strings.Split(O.selectFields,",") {
+				columns = append(columns, strings.TrimSpace(v))
+			}
+
+		} else {
+			var skip = false
+			for _,v := range strings.Split(O.selectFields,",") {
+				if strings.Contains(v, "(") {
+					skip = true
+				}
+
+				if strings.Contains(v, ")") {
+					tmp := strings.Split(strings.TrimSpace(v)," ")
+					columns = append(columns, tmp[len(tmp)-1])
+					skip = false
+					continue
+				}
+
+				if skip {
+					continue
+				}
+
+				columns = append(columns, strings.TrimSpace(v))
 			}
 		}
 	}

@@ -62,9 +62,10 @@ func TestSelectPrimary(t *testing.T) {
 
 func TestSelectField(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
-	row := O.Field("price").Where("1").Find()
+	row := O.Field("left(name, 1) as c,name,category").Where("2").Find()
 	_, ok := row["name"]
-	if !ok {
+
+	if ok {
 		t.Log(row)
 	} else {
 		t.Fail()
