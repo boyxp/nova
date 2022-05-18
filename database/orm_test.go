@@ -37,16 +37,16 @@ func TestExec(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
-	O.Insert(map[string]interface{}{"name":"可口可乐","price":"100","detail":"...","category":"饮料"})
-	O.Insert(map[string]interface{}{"name":"小红帽","price":"200","detail":"...","category":"服装"})
-	O.Insert(map[string]interface{}{"name":"雪碧","price":"300","category":"饮料"})
-	O.Insert(map[string]interface{}{"name":"高跟鞋","price":"400","detail":"...","category":"服装"})
-	O.Insert(map[string]interface{}{"name":"芬达","price":"500","detail":"...","category":"饮料"})
-	O.Insert(map[string]interface{}{"name":"海魂衫","price":"600","category":"服装"})
-	O.Insert(map[string]interface{}{"name":"和其正","price":"700","detail":"...","category":"饮料"})
-	O.Insert(map[string]interface{}{"name":"领带","price":"800","detail":"...","category":"服装"})
-	O.Insert(map[string]interface{}{"name":"美年达","price":"900","category":"饮料"})
-	O.Insert(map[string]interface{}{"name":"呢子大衣","price":"1000","detail":"...","category":"服装"})
+	O.Insert(map[string]string{"name":"可口可乐","price":"100","detail":"...","category":"饮料"})
+	O.Insert(map[string]string{"name":"小红帽","price":"200","detail":"...","category":"服装"})
+	O.Insert(map[string]string{"name":"雪碧","price":"300","category":"饮料"})
+	O.Insert(map[string]string{"name":"高跟鞋","price":"400","detail":"...","category":"服装"})
+	O.Insert(map[string]string{"name":"芬达","price":"500","detail":"...","category":"饮料"})
+	O.Insert(map[string]string{"name":"海魂衫","price":"600","category":"服装"})
+	O.Insert(map[string]string{"name":"和其正","price":"700","detail":"...","category":"饮料"})
+	O.Insert(map[string]string{"name":"领带","price":"800","detail":"...","category":"服装"})
+	O.Insert(map[string]string{"name":"美年达","price":"900","category":"饮料"})
+	O.Insert(map[string]string{"name":"呢子大衣","price":"1000","detail":"...","category":"服装"})
 }
 
 func TestSelectPrimary(t *testing.T) {

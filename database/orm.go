@@ -32,7 +32,7 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 	return O
 }
 
-func (O *Orm) Insert(data map[string]interface{}) int64 {
+func (O *Orm) Insert(data map[string]string) int64 {
 	fields       := []string{}
 	placeholders := []string{}
 	values       := []interface{}{}
