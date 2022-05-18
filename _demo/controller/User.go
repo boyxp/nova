@@ -104,7 +104,7 @@ func (C *User) Jump() {
 
 //数据库添加操作
 func (C *User) Add() map[string]interface{} {
-	user_id := model.User().Insert(map[string]interface{}{"user_name":"xiaoming","password":"123"})
+	user_id := model.User().Insert(map[string]string{"user_name":"xiaoming","password":"123"})
 	return map[string]interface{}{"user_id":user_id}
 }
 
