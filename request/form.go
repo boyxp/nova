@@ -46,7 +46,16 @@ func (F *Form) Parse(r *http.Request)map[string]string {
                defer dst.Close()
                io.Copy(dst, part)
 
-               params[k] =v
+               if strings.Contains(k, "[") {
+                  rk := k[:len(k)-2]
+                  if _, ok := params[rk];ok {
+                     params[rk] = params[rk]+":"+v
+                  } else {
+                     params[rk] = v
+                  }
+               } else {
+                  params[k] = v
+               }
             }
          }
       }
