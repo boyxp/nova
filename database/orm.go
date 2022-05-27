@@ -228,13 +228,15 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 	return O
 }
 
-func (O *Orm) Group(field string) *Orm {
-	_, ok := O.scheme[field]
-	if !ok {
-		panic(field+":聚合字段不存在")
-	}
+func (O *Orm) Group(fields ...string) *Orm {
+	for _, field := range fields {
+		_, ok := O.scheme[field]
+		if !ok {
+			panic(field+":聚合字段不存在")
+		}
 
-	O.selectGroup = append(O.selectGroup, field)
+		O.selectGroup = append(O.selectGroup, field)
+	}
 
 	return O
 }

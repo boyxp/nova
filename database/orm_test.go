@@ -156,9 +156,9 @@ func TestSelectLike(t *testing.T) {
 
 func TestSelectGroup(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
-	rows := O.Field("count(*) as num,category").
+	rows := O.Field("count(*) as num,category,price").
 			Where("goods_id", ">", "0").
-			Group("category").
+			Group("category","price").
 			Having("num",">",1).
 			Select()
 
