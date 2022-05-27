@@ -60,6 +60,16 @@ func TestSelectPrimary(t *testing.T) {
 	}
 }
 
+func TestExist(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	ok := O.Exist("100000")
+	if !ok {
+		t.Log("yes")
+	} else {
+		t.Fail()
+	}
+}
+
 func TestSelectField(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Field("left(name, 1) as c,name,category").Where("2").Find()

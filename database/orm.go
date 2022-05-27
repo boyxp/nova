@@ -434,7 +434,10 @@ func (O *Orm) Count() int {
 	return result
 }
 
-
+func (O *Orm) Exist(primary string) bool {
+	res := O.Where(primary).Find()
+	return res!=nil
+}
 
 
 func (O *Orm) selectStmt() string {
