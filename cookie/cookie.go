@@ -46,6 +46,9 @@ func Set(name string, value string) bool {
 	}
 
 	w := register.GetResponseWriter()
+	if w==nil {
+		return false
+	}
 
 	http.SetCookie(w, &c)
 
@@ -54,6 +57,9 @@ func Set(name string, value string) bool {
 
 func Get(name string) string {
 	r := register.GetRequest()
+	if r==nil {
+		return ""
+	}
 
 	c, err := r.Cookie(name)
 	if err == nil {
