@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROGRAM=api
+PROGRAM=main
 
 pid() {
 	if [ -f "./pid" ];then
