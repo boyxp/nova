@@ -584,13 +584,20 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 	sql.WriteString(O.table)
 	sql.WriteString(" SET ")
 
+	var i int  = 1
+	var length = len(data)
 	for f,v := range data {
+
 		if _, ok := O.scheme[f];!ok {
 			panic(f+":字段不存在")
 		}
 
 		sql.WriteString(f+"=? ")
+		if i < length {
+			sql.WriteString(",")
+		}
 		params = append(params, v)
+		i = i+1
 	}
 	params = append(params, O.selectParams...)
 

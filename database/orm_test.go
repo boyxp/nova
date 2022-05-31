@@ -260,7 +260,7 @@ func TestSelectQueryReuse(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
-	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口"})
+	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口","price":"111"})
 	if af > 0 {
 		t.Log(af)
 	} else {
