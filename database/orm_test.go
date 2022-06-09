@@ -164,6 +164,16 @@ func TestSelectLike(t *testing.T) {
 	}
 }
 
+func TestSelectOrder(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	rows := O.Field("category,price").Order("category","asc").Order("price","desc").Select()
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
 func TestSelectGroup(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Field("count(*) as num,category,price").
