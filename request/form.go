@@ -13,6 +13,17 @@ type Form struct {}
 func (F *Form) Parse(r *http.Request)map[string]string {
 	params := map[string]string{}
 
+   values := r.URL.Query()
+   for k, v := range values {
+      if strings.Contains(k, "[") {
+         rk := k[:len(k)-2]
+         params[rk] = strings.Join(v, ":")
+      } else {
+         params[k] = v[0]
+      }
+   }
+
+
    contentType := r.Header.Get("Content-Type")
 
    if(contentType=="application/x-www-form-urlencoded") {
