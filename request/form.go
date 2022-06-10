@@ -30,7 +30,12 @@ func (F *Form) Parse(r *http.Request)map[string]string {
 	   r.ParseForm()
    	if len(r.Form) > 0 {
          for k,v := range r.Form {
-            params[k] = v[0]
+            if strings.Contains(k, "[") {
+               rk := k[:len(k)-2]
+               params[rk] = strings.Join(v, ":")
+            } else {
+               params[k] = v[0]
+            }
          }
       }
    }
