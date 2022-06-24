@@ -399,6 +399,56 @@ func (O *Orm) Values(field string) []string {
 	return result
 }
 
+func (O *Orm) Columns(fields ...string) map[string]string {
+	var key   string
+	var value string
+
+	if len(fields)==0 {
+		panic("参数不可为空")
+
+	} else if(len(fields)==1) {
+		key   = O.primary
+		value = fields[0]
+
+	} else {
+		key   = fields[1]
+		value = fields[0]
+	}
+
+	selectFields := O.selectFields
+
+	_, ok_key := O.scheme[key]
+	if ok_key {
+	} else if strings.Contains(" "+O.selectFields+" ", " "+key+" ") {
+	} else {
+		panic(key+":取值字段应为普通字段或聚合别名")
+	}
+
+	_, ok_value := O.scheme[value]
+	if ok_value {
+	} else if strings.Contains(" "+O.selectFields+" ", " "+value+" ") {
+	} else {
+		panic(value+":取值字段应为普通字段或聚合别名")
+	}
+
+	O.selectFields = key+","+value
+
+	var result map[string]string
+
+	list := O.Select()
+
+	O.selectFields = selectFields
+
+	if len(list)>0 {
+		result = map[string]string{}
+		for _, v := range list {
+			result[v[key]] = v[value]
+		}
+	}
+
+	return result
+}
+
 func (O *Orm) Sum(field string) int {
 	_, ok := O.scheme[field]
 	if !ok {
