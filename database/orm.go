@@ -418,29 +418,32 @@ func (O *Orm) Columns(fields ...string) map[string]string {
 	selectFields := O.selectFields
 
 	_, ok_key := O.scheme[key]
-	if ok_key {
-	} else if strings.Contains(" "+O.selectFields+" ", " "+key+" ") {
-	} else {
-		panic(key+":取值字段应为普通字段或聚合别名")
+	check_key := strings.Contains(" "+O.selectFields+" ", " "+key+" ")
+	if !ok_key && !check_key {
+		panic(key+":应为字段或聚合的别名")
 	}
 
 	_, ok_value := O.scheme[value]
-	if ok_value {
-	} else if strings.Contains(" "+O.selectFields+" ", " "+value+" ") {
-	} else {
-		panic(value+":取值字段应为普通字段或聚合别名")
+	check_value := strings.Contains(" "+O.selectFields+" ", " "+value+" ")
+	if !ok_value && !check_value {
+		panic(value+":应为字段或聚合的别名")
 	}
 
-	O.selectFields = key+","+value
+	if len(O.selectFields)==0 {
+		O.selectFields = key+","+value
+	}
 
-	var result map[string]string
+	if strings.Contains(O.selectFields, "(") && len(O.selectGroup)==0 {
+		panic("查询了聚合数据但未设置聚合字段")
+	}
 
 	list := O.Select()
 
 	O.selectFields = selectFields
 
+
+	var result = map[string]string{}
 	if len(list)>0 {
-		result = map[string]string{}
 		for _, v := range list {
 			result[v[key]] = v[value]
 		}
