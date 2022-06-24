@@ -210,6 +210,29 @@ func TestSelectValues(t *testing.T) {
 	}
 }
 
+func TestSelectColumns(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	//names := O.Columns("name")
+	names := O.Columns("name", "goods_id")
+
+	if len(names)>1 {
+		t.Log(names)
+	} else {
+		t.Fail()
+	}
+}
+
+func TestSelectColumnsAggs(t *testing.T) {
+	O := (&database.Orm{}).Init("database", "goods")
+	rows := O.Field("count(*) as num ,category").Group("category").Columns("num", "category")
+
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
 func TestSelectMaxMin(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	max_id := O.Field("MAX(goods_id) as max_id").Value("max_id")
