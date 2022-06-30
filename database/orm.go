@@ -231,8 +231,10 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 func (O *Orm) Group(fields ...string) *Orm {
 	for _, field := range fields {
 		_, ok := O.scheme[field]
-		if !ok {
-			panic(field+":聚合字段不存在")
+		check1 := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+		check2 := strings.Contains(" "+O.selectFields+",", " "+field+",")
+		if !ok && !check1 && !check2 {
+			panic(field+":聚合字段应为一般字段或聚合别名")
 		}
 
 		O.selectGroup = append(O.selectGroup, field)
