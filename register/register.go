@@ -1,7 +1,6 @@
 package register
 
 import "sync"
-import "strings"
 import "runtime"
 import "net/http"
 
@@ -69,11 +68,13 @@ func Clean() bool {
 }
 
 func getRoutineId() string {
-    var (
-        buf [64]byte
-        n   = runtime.Stack(buf[:], false)
-        stk = strings.TrimPrefix(string(buf[:n]), "goroutine ")
-    )
+    var buf [20]byte
+    runtime.Stack(buf[:], false)
+    for i:=10;i<20;i++ {
+        if buf[i]==32 {
+            return string(buf[10:i])
+        }
+    }
 
-    return strings.Fields(stk)[0]
+    return "1"
 }
