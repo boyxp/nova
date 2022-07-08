@@ -49,6 +49,7 @@ func TestInsert(t *testing.T) {
 	O.Insert(map[string]string{"name":"呢子大衣","price":"1000","detail":"...","category":"服装"})
 }
 
+//主键条件查询
 func TestSelectPrimary(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("1").Find()
@@ -60,6 +61,7 @@ func TestSelectPrimary(t *testing.T) {
 	}
 }
 
+//主键条件检查记录是否存在
 func TestExist(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	ok := O.Exist("100000")
@@ -70,6 +72,7 @@ func TestExist(t *testing.T) {
 	}
 }
 
+//指定返回字段
 func TestSelectField(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Field("left(name, 1) as c,name,category").Where("2").Find()
@@ -82,6 +85,7 @@ func TestSelectField(t *testing.T) {
 	}
 }
 
+//=条件查询
 func TestSelectEq(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("goods_id", "1").Find()
@@ -93,6 +97,7 @@ func TestSelectEq(t *testing.T) {
 	}
 }
 
+//大于等于条件查询
 func TestSelectGtEq(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("goods_id", ">=", "1").Find()
@@ -104,6 +109,7 @@ func TestSelectGtEq(t *testing.T) {
 	}
 }
 
+//in条件查询
 func TestSelectIn(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Where("goods_id", "in", []string{"1","2","3"}).Select()
@@ -114,6 +120,7 @@ func TestSelectIn(t *testing.T) {
 	}
 }
 
+//null过滤条件查询
 func TestSelectNull(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("detail", "is", "null").Find()
@@ -124,6 +131,7 @@ func TestSelectNull(t *testing.T) {
 	}
 }
 
+//not null过滤条件查询
 func TestSelectNotNull(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("detail", "is not", "null").Find()
@@ -134,6 +142,7 @@ func TestSelectNotNull(t *testing.T) {
 	}
 }
 
+//between区间条件查询
 func TestSelectBetween(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Where("goods_id", "BETWEEN", []string{"0","3"}).Select()
@@ -144,6 +153,7 @@ func TestSelectBetween(t *testing.T) {
 	}
 }
 
+//复杂语句参数代入查询
 func TestSelectExp(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("goods_id>? AND detail is not null AND category=?", "3", "服装").Find()
@@ -154,6 +164,7 @@ func TestSelectExp(t *testing.T) {
 	}
 }
 
+//like条件搜索查询
 func TestSelectLike(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	row := O.Where("name", "like", "%帽%").Find()
@@ -164,6 +175,7 @@ func TestSelectLike(t *testing.T) {
 	}
 }
 
+//字段排序
 func TestSelectOrder(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Field("category,price").Order("category","asc").Order("price","desc").Select()
@@ -174,6 +186,7 @@ func TestSelectOrder(t *testing.T) {
 	}
 }
 
+//group+having查询
 func TestSelectGroup(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Field("count(*) as num,category,price").
@@ -189,6 +202,7 @@ func TestSelectGroup(t *testing.T) {
 	}
 }
 
+//直接取单记录指定字段值
 func TestSelectValue(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	name := O.Field("name").Where("goods_id", "1").Value("name")
@@ -199,6 +213,7 @@ func TestSelectValue(t *testing.T) {
 	}
 }
 
+//取多记录指定字段切片
 func TestSelectValues(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	names := O.Field("name").Values("name")
@@ -210,6 +225,7 @@ func TestSelectValues(t *testing.T) {
 	}
 }
 
+//取K=>V字段记录map
 func TestSelectColumns(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	//names := O.Columns("name")
@@ -222,6 +238,7 @@ func TestSelectColumns(t *testing.T) {
 	}
 }
 
+//取K=>V聚合值map
 func TestSelectColumnsAggs(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	rows := O.Field("count(*) as num ,category").Group("category").Columns("num", "category")
@@ -233,6 +250,7 @@ func TestSelectColumnsAggs(t *testing.T) {
 	}
 }
 
+//取最大最小值
 func TestSelectMaxMin(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	max_id := O.Field("MAX(goods_id) as max_id").Value("max_id")
@@ -250,6 +268,7 @@ func TestSelectMaxMin(t *testing.T) {
 	}
 }
 
+//查询条件复用
 func TestSelectQueryReuse(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 
@@ -291,6 +310,7 @@ func TestSelectQueryReuse(t *testing.T) {
 	}
 }
 
+//更新操作
 func TestUpdate(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口","price":"111"})
@@ -301,6 +321,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+//删除操作
 func TestDelete(t *testing.T) {
 	O := (&database.Orm{}).Init("database", "goods")
 	af := O.Where("goods_id", "1").Delete()
