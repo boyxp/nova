@@ -4,6 +4,10 @@ type Model struct {
   Table string
 }
 
+func (M Model) New() *Orm {
+      return new(Orm).Init("database", M.Table)
+}
+
 func (M Model) Insert(data map[string]string) int64 {
   return new(Orm).Init("database", M.Table).Insert(data)
 }
