@@ -1,11 +1,21 @@
 package database
 
+import "strings"
+
 type Model struct {
   Table string
 }
 
 func (M Model) New() *Orm {
-      return new(Orm).Init("database", M.Table)
+      dbtag := "database"
+      table := M.Table
+      index := strings.Index(table, ".")
+      if index>0 {
+            dbtag = table[0:index]
+            table = table[index+1:]
+      }
+
+      return new(Orm).Init(dbtag, table)
 }
 
 func (M Model) Insert(data map[string]string) int64 {
