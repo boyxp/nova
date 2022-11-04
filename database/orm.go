@@ -1,5 +1,7 @@
 package database
 
+import "os"
+import "log"
 import "strings"
 import "strconv"
 import "database/sql"
@@ -20,12 +22,15 @@ type Orm struct {
 	selectOrder []string
 	selectGroup []string
 	selectHaving string
+
+	debug string
 }
 
 func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbtag  = dbtag
 	O.dbname = Dbname(dbtag)
 	O.table  = table
+	O.debug  = os.Getenv("debug")
 
 	O.initScheme(table)
 
@@ -76,7 +81,6 @@ func (O *Orm) Update(data map[string]string) int64 {
 	}
 
 	_sql, params := O.updateStmt(data)
-
 	res := O.execute(_sql, params)
 
 	ar, err := res.RowsAffected()
@@ -308,6 +312,11 @@ func (O *Orm) Select() []map[string]string {
 	defer db.Close()
 
 	stmt := O.selectStmt()
+
+	if O.debug=="yes" {
+		log.Println("SQL:\t"+stmt)
+	}
+
 	rows, err := db.Query(stmt, O.selectParams...)
 	if err != nil {
 		panic(err.Error())
@@ -675,6 +684,10 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 func (O *Orm) execute(_sql string, values []interface{}) sql.Result {
 	db := Open(O.dbtag)
 	defer db.Close()
+
+	if O.debug=="yes" {
+		log.Println("SQL:\t"+_sql)
+	}
 
 	stmt, err := db.Prepare(_sql)
 	if err != nil {
