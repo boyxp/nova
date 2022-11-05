@@ -1,44 +1,16 @@
 package main
 //package validator
 
-/*
-
-init (
-	validator.Register("main", func(a string, p interface{}) error {})
-)
-
-validator {
-	rules map[attr]func
-	
-	Validate(instance interface{}, params map[string]interface{}) (result map[string]string, ok bool)
-	{
-		//先取规则集合
-		//遍历传入参数数组
-		{
-			按属性找到对应函数
-			传入约束和参数值
-			如果报错，写入报错结果集合
-		}
-
-		如果结果集合大于0 返回数组，返回ok
-	}
-
-	getrule(instance interface{}) map[string]map[string]string {
-		//先判断是否存在，没存在则解析缓存
-		//返回
-	}
-}
-
-*/
-
-
 import "log"
 import "sync"
 import "errors"
 import "reflect"
 
 func main() {
-	Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc"})
+	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc"})
+	for f,e := range result {
+		log.Println("参数：",f,"错误：",e)
+	}
 }
 
 type User struct {
@@ -99,17 +71,31 @@ func Register(attr string, call func(set string, param interface{}) error) bool 
 	return true
 }
 
-func Validate(instance interface{}, params map[string]interface{}) (result map[string]string, ok bool) {
-	result = map[string]string{}
-	ok     = false
+func Validate(instance interface{}, params map[string]interface{}) map[string]string {
+	result := map[string]string{}
 
-	_rules := scan(instance)
+	rules := scan(instance)
 
-	for field, set := range _rules {
-		log.Println("check:", field, set)
+	for field, param := range params {
+		err := ""
+		if sets, ok := rules[field];ok {
+			for attr,set := range sets {
+				_call, _ := attrs.Load(attr)
+				_func    := _call.(func(set string, param interface{}) error)
+				_res     := _func(set, param)
+
+				if _res!=nil {
+					err = err+_res.Error()
+				}
+			}
+		}
+
+		if len(err)>0 {
+			result[field] = err
+		}
 	}
 
-	return result, ok
+	return result
 }
 
 func scan(instance interface{}) (rules map[string]map[string]string) {
@@ -139,7 +125,7 @@ func scan(instance interface{}) (rules map[string]map[string]string) {
 		attrs.Range(func(key, value interface{}) bool {
 			attr := key.(string)
 			if _tag== attr {
-				rules[name][attr] = attr
+				rules[name][attr] = ""
 				return false
 			}
 
