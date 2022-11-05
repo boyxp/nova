@@ -26,6 +26,7 @@ type User struct {
 
 func init() {
 	Register("mail", func(set string, param interface{}) error{
+		log.Println(param)
 		return errors.New("不是邮箱格式")
 	})
 
@@ -75,6 +76,10 @@ func Validate(instance interface{}, params map[string]interface{}) map[string]st
 	result := map[string]string{}
 
 	rules := scan(instance)
+
+	if len(rules)==0 {
+		return result
+	}
 
 	for field, param := range params {
 		err := ""
