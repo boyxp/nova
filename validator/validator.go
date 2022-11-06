@@ -5,9 +5,10 @@ import "log"
 import "sync"
 import "errors"
 import "reflect"
+import "strconv"
 
 func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc", "Temp":3})
+	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc", "Temp":1})
 	for f,e := range result {
 		log.Println("参数：",f,"错误：",e)
 	}
@@ -20,7 +21,7 @@ type User struct {
 	Date string `date`
 	Mobile string `mobile`
 	Tel string `tel`
-	Temp string `min:"1" max:"2" length:"10"`
+	Temp string `min:"10" max:"20" length:"10"`
 	Empty string
 }
 
@@ -51,11 +52,38 @@ func init() {
 	})
 
 	Register("min", func(set string, param interface{}) error{
-		
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("min设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param >= _set {
+			return nil
+		}
+
 		return errors.New("不可小于"+set)
 	})
 
 	Register("max", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("max设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param <= _set {
+			return nil
+		}
+
 		return errors.New("不可大于"+set)
 	})
 
