@@ -3,12 +3,13 @@ package main
 
 import "log"
 import "sync"
+import "regexp"
 import "errors"
 import "reflect"
 import "strconv"
 
 func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc", "Temp":1})
+	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@ccc", "Temp":11})
 	for f,e := range result {
 		log.Println("参数：",f,"错误：",e)
 	}
@@ -27,7 +28,19 @@ type User struct {
 
 func init() {
 	Register("mail", func(set string, param interface{}) error{
-		log.Println(param)
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
+		reg     := regexp.MustCompile(pattern)
+		res     := reg.MatchString(_param)
+
+		if(res==true) {
+			return nil
+		}
+
 		return errors.New("不是邮箱格式")
 	})
 
