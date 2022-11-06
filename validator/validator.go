@@ -7,7 +7,7 @@ import "errors"
 import "reflect"
 
 func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc"})
+	result := Validate(User{}, map[string]interface{}{"Mail":"abc@ccc.cc", "Temp":3})
 	for f,e := range result {
 		log.Println("参数：",f,"错误：",e)
 	}
@@ -51,11 +51,12 @@ func init() {
 	})
 
 	Register("min", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		
+		return errors.New("不可小于"+set)
 	})
 
 	Register("max", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		return errors.New("不可大于"+set)
 	})
 
 	//"date":"date",len":"length","length":"length","gt":"gt","gte":"gte","lt":"lt","lte":"lte","ne":"ne","size":"size"
@@ -74,8 +75,7 @@ func Register(attr string, call func(set string, param interface{}) error) bool 
 
 func Validate(instance interface{}, params map[string]interface{}) map[string]string {
 	result := map[string]string{}
-
-	rules := scan(instance)
+	rules  := scan(instance)
 
 	if len(rules)==0 {
 		return result
@@ -90,7 +90,7 @@ func Validate(instance interface{}, params map[string]interface{}) map[string]st
 				_res     := _func(set, param)
 
 				if _res!=nil {
-					err = err+_res.Error()
+					err = err+_res.Error()+";"
 				}
 			}
 		}
@@ -109,7 +109,6 @@ func scan(instance interface{}) (rules map[string]map[string]string) {
 
 	value, ok := cache.Load(key)
     if ok {
-    	log.Println("cache:yes")
         return value.(map[string]map[string]string)
     }
 
@@ -120,16 +119,17 @@ func scan(instance interface{}) (rules map[string]map[string]string) {
 		field      := ref.Field(i)
 		name       := field.Name
 		tag        := field.Tag
-		rules[name] = map[string]string{}
 
 		if tag=="" {
 			continue
 		}
 
+		rules[name] = map[string]string{}
+
 		_tag := string(tag)
 		attrs.Range(func(key, value interface{}) bool {
 			attr := key.(string)
-			if _tag== attr {
+			if _tag==attr {
 				rules[name][attr] = ""
 				return false
 			}
