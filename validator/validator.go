@@ -9,7 +9,7 @@ import "reflect"
 import "strconv"
 
 func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@ccc", "Temp":11})
+	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@efg.cn", "Temp":11,"Url":"https://www.com:8080/a/b/c?a=b&c=d#1111"})
 	for f,e := range result {
 		log.Println("参数：",f,"错误：",e)
 	}
@@ -45,7 +45,18 @@ func init() {
 	})
 
 	Register("url", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		reg    := regexp.MustCompile("(http|https):\\/\\/[\\w\\-_]+(\\.[\\w\\-_]+)+([\\w\\-\\.,@?^=%&:/~\\+#]*[\\w\\-\\@?^=%&/~\\+#])?")
+		result := reg.FindAllStringSubmatch(_param, -1)
+		if result == nil {
+			return errors.New("不是url格式")
+		}
+
+		return nil
 	})
 
 	Register("ip", func(set string, param interface{}) error{
