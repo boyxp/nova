@@ -3,6 +3,7 @@ package validator
 import "net"
 import "sync"
 import "regexp"
+import "strings"
 import "errors"
 import "reflect"
 import "strconv"
@@ -249,6 +250,19 @@ func init() {
 		}
 
 		return errors.New("长度应为"+set)
+	})
+
+	Register("in", func(set string, param interface{}) error{
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if(strings.Contains(","+set+",", ","+_param+",")) {
+			return nil
+		}
+
+		return errors.New("必须属于"+set+"之一")
 	})
 
 }
