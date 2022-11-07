@@ -125,6 +125,24 @@ func init() {
 		return errors.New("不可大于"+set)
 	})
 
+	Register("len", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("len设置类型错误")
+		}
+
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if len(_param) == _set {
+			return nil
+		}
+
+		return errors.New("长度应为"+set)
+	})
+
 	//"date":"date",len":"length","length":"length","gt":"gt","gte":"gte","lt":"lt","lte":"lte","ne":"ne","size":"size"
 }
 
