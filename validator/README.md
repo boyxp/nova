@@ -17,6 +17,7 @@ func main() {
                 "Card":"12345678",
                 "Age":160,
                 "Height":175,
+                "Color":"black",
         })
 
         for field, err := range result {
@@ -33,7 +34,8 @@ type User struct {
         Num string `min:"10" max:"20" length:"10"`
         Addr string
         Card string `len:"7"`
-        Age int `gt:"18" lt:"50"`
+        Age int `gt:"18" lt:"50" eq:"40"`
         Height int `gte:"160" lte:"170" ne:"175"`
+        Color string `in:"red,green,blue"`
 }
 ```
