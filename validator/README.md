@@ -59,5 +59,13 @@ set为设定值，param为实际参数
 
                 return errors.New("值必须为"+set)
         })
+
+        type Book struct {
+                Sort string `must:"novel"`
+        }
+
+        validator.Validate(Book{}, map[string]interface{}{
+                "Sort":"story",
+        })
 ```
 
