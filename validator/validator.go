@@ -146,7 +146,7 @@ func init() {
 	Register("gte", func(set string, param interface{}) error{
 		_set, err := strconv.Atoi(set)
 		if err != nil {
-			return errors.New("gt设置类型错误")
+			return errors.New("gte设置类型错误")
 		}
 
 		_param, ok := param.(int)
@@ -164,7 +164,7 @@ func init() {
 	Register("lt", func(set string, param interface{}) error{
 		_set, err := strconv.Atoi(set)
 		if err != nil {
-			return errors.New("gt设置类型错误")
+			return errors.New("lt设置类型错误")
 		}
 
 		_param, ok := param.(int)
@@ -182,7 +182,7 @@ func init() {
 	Register("lte", func(set string, param interface{}) error{
 		_set, err := strconv.Atoi(set)
 		if err != nil {
-			return errors.New("gt设置类型错误")
+			return errors.New("lte设置类型错误")
 		}
 
 		_param, ok := param.(int)
@@ -200,7 +200,7 @@ func init() {
 	Register("ne", func(set string, param interface{}) error{
 		_set, err := strconv.Atoi(set)
 		if err != nil {
-			return errors.New("gt设置类型错误")
+			return errors.New("ne设置类型错误")
 		}
 
 		_param, ok := param.(int)
@@ -213,6 +213,24 @@ func init() {
 		}
 
 		return errors.New("需不等于"+set)
+	})
+
+	Register("eq", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("eq设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param == _set {
+			return nil
+		}
+
+		return errors.New("需等于"+set)
 	})
 
 	Register("len", func(set string, param interface{}) error{
