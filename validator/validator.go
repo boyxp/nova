@@ -125,6 +125,96 @@ func init() {
 		return errors.New("不可大于"+set)
 	})
 
+	Register("gt", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("gt设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param > _set {
+			return nil
+		}
+
+		return errors.New("需大于"+set)
+	})
+
+	Register("gte", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("gt设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param >= _set {
+			return nil
+		}
+
+		return errors.New("需大于等于"+set)
+	})
+
+	Register("lt", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("gt设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param < _set {
+			return nil
+		}
+
+		return errors.New("需小于"+set)
+	})
+
+	Register("lte", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("gt设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param <= _set {
+			return nil
+		}
+
+		return errors.New("需小于等于"+set)
+	})
+
+	Register("ne", func(set string, param interface{}) error{
+		_set, err := strconv.Atoi(set)
+		if err != nil {
+			return errors.New("gt设置类型错误")
+		}
+
+		_param, ok := param.(int)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		if _param != _set {
+			return nil
+		}
+
+		return errors.New("需不等于"+set)
+	})
+
 	Register("len", func(set string, param interface{}) error{
 		_set, err := strconv.Atoi(set)
 		if err != nil {
@@ -143,7 +233,6 @@ func init() {
 		return errors.New("长度应为"+set)
 	})
 
-	//"date":"date",len":"length","length":"length","gt":"gt","gte":"gte","lt":"lt","lte":"lte","ne":"ne","size":"size"
 }
 
 //属性
