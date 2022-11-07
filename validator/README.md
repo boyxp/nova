@@ -15,6 +15,8 @@ func main() {
                 "Phone":"01-12345678999",
                 "Mobi":"188888888880",
                 "Card":"12345678",
+                "Age":160,
+                "Height":175,
         })
 
         for field, err := range result {
@@ -31,5 +33,7 @@ type User struct {
         Num string `min:"10" max:"20" length:"10"`
         Addr string
         Card string `len:"7"`
+        Age int `gt:"18" lt:"50"`
+        Height int `gte:"160" lte:"170" ne:"175"`
 }
 ```
