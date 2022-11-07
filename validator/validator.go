@@ -2,6 +2,7 @@ package main
 //package validator
 
 import "log"
+import "net"
 import "sync"
 import "regexp"
 import "errors"
@@ -9,7 +10,7 @@ import "reflect"
 import "strconv"
 
 func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@efg.cn", "Temp":11,"Url":"https://www.com:8080/a/b/c?a=b&c=d#1111"})
+	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@efg.cn", "Temp":11,"Url":"https://www.com:8080/a/b/c?a=b&c=d#1111","Ip":"0.0.0.0"})
 	for f,e := range result {
 		log.Println("参数：",f,"错误：",e)
 	}
@@ -60,7 +61,18 @@ func init() {
 	})
 
 	Register("ip", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		ip := net.ParseIP(_param)
+
+		if ip != nil && ip.To4() != nil {
+			return nil
+		}
+
+		return errors.New("不是ip格式")
 	})
 
 	Register("tel", func(set string, param interface{}) error{
