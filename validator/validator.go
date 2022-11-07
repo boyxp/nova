@@ -1,31 +1,11 @@
-package main
-//package validator
+package validator
 
-import "log"
 import "net"
 import "sync"
 import "regexp"
 import "errors"
 import "reflect"
 import "strconv"
-
-func main() {
-	result := Validate(User{}, map[string]interface{}{"Mail":"a.b-c+d@efg.cn", "Temp":11,"Url":"https://www.com:8080/a/b/c?a=b&c=d#1111","Ip":"0.0.0.0"})
-	for f,e := range result {
-		log.Println("参数：",f,"错误：",e)
-	}
-}
-
-type User struct {
-	Mail string `mail`
-	Url string `url`
-	Ip string `ip`
-	Date string `date`
-	Mobile string `mobile`
-	Tel string `tel`
-	Temp string `min:"10" max:"20" length:"10"`
-	Empty string
-}
 
 func init() {
 	Register("mail", func(set string, param interface{}) error{
@@ -76,15 +56,37 @@ func init() {
 	})
 
 	Register("tel", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
+
+		pattern := `^([0-9]{3,4}\-)?[0-9]{7,8}(\-[0-9]+)?$`
+		reg     := regexp.MustCompile(pattern)
+		res     := reg.MatchString(_param)
+
+		if(res==true) {
+			return nil
+		}
+
+		return errors.New("不是电话号码格式")
 	})
 
 	Register("mobile", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
-	})
+		_param, ok := param.(string)
+		if !ok {
+			return errors.New("参数类型错误")
+		}
 
-	Register("domain", func(set string, param interface{}) error{
-		return errors.New("不符合要求")
+		pattern := `^1[0-9]{10}$`
+		reg     := regexp.MustCompile(pattern)
+		res     := reg.MatchString(_param)
+
+		if(res==true) {
+			return nil
+		}
+
+		return errors.New("不是手机号码格式")
 	})
 
 	Register("min", func(set string, param interface{}) error{
