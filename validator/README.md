@@ -1,5 +1,7 @@
 ## 验证器
 
+### 用法示例
+
 ```go
 package main
 
@@ -39,3 +41,23 @@ type User struct {
         Color string `in:"red,green,blue"`
 }
 ```
+
+### 注册自定义规则
+
+set为设定值，param为实际参数
+
+```go
+        validator.Register("must", func(set string, param interface{}) error{
+                _param, ok := param.(string)
+                if !ok {
+                        return errors.New("参数类型错误")
+                }
+
+                if(set==_param) {
+                        return nil
+                }
+
+                return errors.New("值必须为"+set)
+        })
+```
+
