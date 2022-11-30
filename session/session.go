@@ -1,7 +1,5 @@
 package session
 
-import "log"
-
 import "os"
 import "net"
 import "runtime"
@@ -49,20 +47,29 @@ func Set(name string, value string) bool {
 	var data map[string]interface{}
 
 	sess := read()
-	if sess==nil {
+	ssid := getSsid()
+	path := getPath()
 
-		//生成sessionid，发送cookie
+	if sess==nil {
+		data = make(map[string]interface{})
+
+		cookie.Set("PHPSESSID", ssid)
+
+	} else {
+		data = sess
 	}
 
 	data[name] = value
 
-//	byte, _ := gophp.Serialize(data)
-//	string(jsonbyte)
-//	think|
-	return true
+	_byte, _ := gophp.Serialize(data)
+	content := "think|"+string(_byte)
+
+	err := ioutil.WriteFile(path+"/sess_"+ssid, []byte(content), 0666)
+
+	return err == nil
 }
 
-func ssid() string {
+func getSsid() string {
 	ssid := cookie.Get("PHPSESSID")
 	if ssid != "" {
 		return ssid
@@ -83,7 +90,7 @@ func ssid() string {
     return ssid
 }
 
-func path() string {
+func getPath() string {
 	_path := os.Getenv("session.path")
 	if _path != "" {
 		return _path
@@ -95,8 +102,8 @@ func path() string {
 func read() map[string]interface{} {
 	var res map[string]interface{}
 
-	ssid := ssid()
-	path := path()
+	ssid := getSsid()
+	path := getPath()
 
 	file, err := os.Open(path+"/sess_"+ssid)
 	defer file.Close()
