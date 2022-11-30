@@ -1,11 +1,19 @@
 package session
 
+import "log"
+
 import "os"
+import "net"
+import "runtime"
 import "strconv"
 import "strings"
+import "net/http"
 import "io/ioutil"
+import "crypto/md5"
+import "encoding/hex"
 import "github.com/leeqvip/gophp"
 import "github.com/boyxp/nova/cookie"
+import "github.com/boyxp/nova/register"
 
 func Get(name string) string {
 	sess := read()
@@ -38,6 +46,19 @@ func Get(name string) string {
 }
 
 func Set(name string, value string) bool {
+	var data map[string]interface{}
+
+	sess := read()
+	if sess==nil {
+
+		//生成sessionid，发送cookie
+	}
+
+	data[name] = value
+
+//	byte, _ := gophp.Serialize(data)
+//	string(jsonbyte)
+//	think|
 	return true
 }
 
@@ -48,7 +69,18 @@ func ssid() string {
 	}
 
 	ssid = cookie.Get("GOSESSID")
-	return ssid
+	if ssid != "" {
+		return ssid
+	}
+
+	req := register.GetRequest()
+	ip  := getIP(req)
+	id  := getRoutineId()
+
+    sum := md5.Sum([]byte(ip+":"+id))
+    ssid = hex.EncodeToString(sum[:])
+
+    return ssid
 }
 
 func path() string {
@@ -89,4 +121,33 @@ func read() map[string]interface{} {
 	}
 
 	return sess
+}
+
+func getIP(req *http.Request) string {
+    remoteAddr := req.RemoteAddr
+    if ip := req.Header.Get("X-Real-IP"); ip != "" {
+        remoteAddr = ip
+    } else if ip = req.Header.Get("X-Forwarded-For"); ip != "" {
+        remoteAddr = ip
+    } else {
+        remoteAddr, _, _ = net.SplitHostPort(remoteAddr)
+    }
+
+    if remoteAddr == "::1" {
+        remoteAddr = "127.0.0.1"
+    }
+
+    return remoteAddr
+}
+
+func getRoutineId() string {
+    var buf [20]byte
+    runtime.Stack(buf[:], false)
+    for i:=10;i<20;i++ {
+        if buf[i]==32 {
+            return string(buf[10:i])
+        }
+    }
+
+    return "1"
 }
