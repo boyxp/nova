@@ -195,7 +195,7 @@ func TestSelectGroup(t *testing.T) {
 			Having("num",">",1).
 			Select()
 
-	if len(rows)>1 {
+	if len(rows)>0 {
 		t.Log(rows)
 	} else {
 		t.Fail()
