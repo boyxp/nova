@@ -344,7 +344,13 @@ func (O *Orm) Select() []map[string]string {
 				value = string(col)
 			}
 
-			record[columns[i]] = value
+			key := columns[i]
+			pos := strings.LastIndex(key, " ")
+			if pos > -1 {
+				key = key[pos+1:]
+			}
+
+			record[key] = value
 		}
 
 		result = append(result, record)
