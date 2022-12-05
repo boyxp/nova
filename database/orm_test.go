@@ -46,7 +46,7 @@ func TestInsert(t *testing.T) {
 	O.Insert(map[string]string{"name":"和其正","price":"700","detail":"...","category":"饮料"})
 	O.Insert(map[string]string{"name":"领带","price":"800","detail":"...","category":"服装"})
 	O.Insert(map[string]string{"name":"美年达","price":"900","category":"饮料"})
-	O.Insert(map[string]string{"name":"呢子大衣","price":"1000","detail":"...","category":"服装"})
+	O.Insert(map[string]string{"name":"呢子大衣","price":"200","detail":"...","category":"服装"})
 }
 
 //主键条件查询
