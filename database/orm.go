@@ -315,6 +315,7 @@ func (O *Orm) Select() []map[string]string {
 
 	if O.debug=="yes" {
 		log.Println("SQL:\t"+stmt)
+		log.Println("PARAMS:\t",O.selectParams)
 	}
 
 	rows, err := db.Query(stmt, O.selectParams...)
