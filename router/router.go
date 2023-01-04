@@ -223,6 +223,17 @@ func Invoke(path string, args map[string]string) interface{} {
 		}
 	}
 
+	//检查是否存在Init方法，存在则优先调用
+	idx := strings.LastIndex(path, "/")
+	key := path[0:idx]+"/init"
+	val, ok := routes.Load(key)
+	if ok {
+		init  := val.(Route)
+		empty := make([]reflect.Value, 0, 0)
+		init.method.Call(empty)
+	}
+
+
 	result := route.method.Call(argvs)
 	if len(result) == 0 {
 		return nil
