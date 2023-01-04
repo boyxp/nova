@@ -230,7 +230,10 @@ func Invoke(path string, args map[string]string) interface{} {
 	if ok {
 		init  := val.(Route)
 		empty := make([]reflect.Value, 0, 0)
-		init.method.Call(empty)
+		succ  := init.method.Call(empty)
+		if len(succ)>0 && succ[0].Interface()==false {
+			return nil
+		}
 	}
 
 
