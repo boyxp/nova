@@ -1,38 +1,34 @@
 package cookie
 
+import "os"
+import "strconv"
 import "net/http"
 import "github.com/boyxp/nova/register"
 
-var config map[string]interface{}
-func Config(set map[string]interface{}) bool {
-	config = set
-	return true
-}
-
 func Set(name string, value string) bool {
-	HttpOnly,ok := read("HttpOnly").(bool)
-	if !ok {
-		HttpOnly = true
+	HttpOnly := true
+	if read("HttpOnly")=="false" {
+		HttpOnly = false
 	}
 
-	Secure,ok := read("Secure").(bool)
-	if !ok {
+	Secure := true
+	if read("Secure")=="false" {
 		Secure = false
 	}
 
-	Path,ok := read("Path").(string)
-	if !ok {
-		Path = "/"
+	Path := "/"
+	if read("Path")!="" {
+		Path = read("Path")
 	}
 
-	Domain,ok := read("Domain").(string)
-	if !ok {
-		Domain = ""
-	}
+	Domain := read("Domain")
 
-	MaxAge,ok := read("MaxAge").(int)
-	if !ok {
-		MaxAge = 1200
+	MaxAge := 86400
+	if read("MaxAge")!="" {
+		v, err := strconv.Atoi(read("MaxAge"))
+		if err==nil {
+			MaxAge = v
+		}
 	}
 
 	c := http.Cookie{
@@ -69,12 +65,6 @@ func Get(name string) string {
 	return ""
 }
 
-func read(key string) interface{} {
-	value, ok := config[key]
-
-	if ok {
-		return value
-	}
-
-	return nil
+func read(key string) string {
+	return os.Getenv("cookie."+key)
 }
