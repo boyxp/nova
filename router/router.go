@@ -54,6 +54,11 @@ func Register(controller interface{}) bool {
 		module = module[strings.Index(module, ".")+1:]
 	}
 
+	//打印日志
+	if os.Getenv("debug")=="yes" {
+		log.Println("注册控制器："+module)
+	}
+
 	maps := scan(file, module)
 
 	//遍历控制器方法
