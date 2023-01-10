@@ -96,6 +96,22 @@ case "$1" in
 			echo "\033[33m 未运行 \033[0m"
 		fi
 	;;
+	reload)
+		PID=$(pid)
+		if [ $PID -gt 0 ];then
+			echo "重新加载配置中...原pid:$PID"
+			kill -s HUP $PID
+			sleep 2
+			PID=$(pid)
+			if [ $PID -gt 0 ];then
+				echo "\033[32m 重新加载成功...新pid:$PID \033[0m" 
+			else
+				echo "\033[33m 重新加载失败 \033[0m"
+			fi
+		else
+			echo "\033[33m 未运行 \033[0m"
+		fi
+	;;
 	*)
     	echo "Usage: $0 {start|stop|status|restart}"
         exit 1
