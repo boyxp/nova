@@ -71,11 +71,14 @@ sh manage.sh start
 ```bash
 sh manage.sh status
 ```
-平滑重启（重启过程旧请求不中断）
+平滑重启（执行build，重启过程旧请求不中断）
 ```bash
 sh manage.sh restart
 ```
-
+重新加载配置（不执行build，只重新加载环境变量配置）
+```bash
+sh manage.sh reload
+```
 停止进程（将在请求完成后退出）
 ```bash
 sh manage.sh stop
