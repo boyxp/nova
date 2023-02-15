@@ -9,6 +9,7 @@ import "runtime"
 import "reflect"
 import "strings"
 import "io/ioutil"
+import "path/filepath"
 import "github.com/boyxp/nova/exception"
 
 type Route struct {
@@ -85,20 +86,35 @@ func Register(controller interface{}) bool {
 	return true
 }
 
+//读取控制器相关源码
+func read(path string) string {
+	list, err := filepath.Glob(path[0:len(path)-2]+"*")
+	if err != nil {
+		panic(err)
+	}
+
+	var code string = ""
+	for _,f := range list {
+		file, err := os.Open(f)
+		if err != nil {
+			panic(err)
+		}
+
+		defer file.Close()
+
+		content, err := ioutil.ReadAll(file)
+		if err != nil {
+			panic(err)
+		}
+
+		code = code+string(content)
+	}
+
+	return code
+}
 //扫描控制器方法
 func scan(path string, module string) map[string][]string {
-	//读取控制器源码
-	file, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-
-	defer file.Close()
-
-	content, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
+	content := read(path)
 
 	//匹配控制器方法和参数
 	reg := regexp.MustCompile(`func\s*\(.+` + module + `\s*\)\s*([A-Z][A-Za-z0-9_]+)\s*\((.*)\)`)
@@ -107,7 +123,7 @@ func scan(path string, module string) map[string][]string {
 	}
 
 	maps   := map[string][]string{}
-	result := reg.FindAllStringSubmatch(string(content), -1)
+	result := reg.FindAllStringSubmatch(content, -1)
 	for _, match := range result {
 		action := match[1]
 		args   := strings.TrimSpace(match[2])
