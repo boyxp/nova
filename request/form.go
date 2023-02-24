@@ -40,7 +40,7 @@ func (F *Form) Parse(r *http.Request)map[string]string {
       }
    }
 
-   if(strings.Contains(contentType, "multipart/form-data")) {
+   if len(contentType)>=19 && contentType[0:19]=="multipart/form-data" {
       reader, err := r.MultipartReader()
       if err == nil {
          for {
