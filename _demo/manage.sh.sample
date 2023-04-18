@@ -49,8 +49,9 @@ case "$1" in
 			echo "启动中..."
 			build
 			if [ $? -ne 0 ];then
+				host=$(hostname)
 				today=$(date +%Y-%m-%d)
-				nohup ./$PROGRAM >> access.$today.log 2>&1 &
+				nohup ./$PROGRAM >> access.$host.$today.log 2>&1 &
 				sleep 2
 				PID=$(pid)
 				if [ $PID -gt 0 ];then
