@@ -35,4 +35,4 @@ echo "\033[32m浏览器打开以下地址：
 
 \033[0m"
 
-go run api.go
+go run main.go
