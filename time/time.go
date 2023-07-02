@@ -5,6 +5,10 @@ import "log"
 import "strings"
 import "github.com/carmo-evan/strtotime"
 
+func Now() time.Time {
+	return time.Now()
+}
+
 func Strtotime(str string) time.Time {
 	u, err := strtotime.Parse(str, time.Now().Unix())
     if err != nil {
