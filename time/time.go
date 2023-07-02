@@ -1,11 +1,17 @@
-package main
+package time
 
 import "time"
-import "fmt"
+import "log"
 import "strings"
+import "github.com/carmo-evan/strtotime"
 
-func main() {
-	fmt.Println(Date("H:i:s", time.Now().Add(time.Hour * 3)))
+func Strtotime(str string) time.Time {
+	u, err := strtotime.Parse(str, time.Now().Unix())
+    if err != nil {
+    	log.Fatal("strtotime时间格式化失败:"+str)
+    }
+
+    return time.Unix(u,0)
 }
 
 func Date(format string, _time ...time.Time) string {
@@ -18,11 +24,11 @@ func Date(format string, _time ...time.Time) string {
 	}
 
 	if format=="Y-m-d H:i:s" {
-		return currentTime.Format("2006.01.02 15:04:05")
+		return currentTime.Format("2006-01-02 15:04:05")
 	}
 
 	if format=="Y-m-d" {
-		return currentTime.Format("2006.01.02")
+		return currentTime.Format("2006-01-02")
 	}
 
 	if format=="H:i:s" {
