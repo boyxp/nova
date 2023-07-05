@@ -122,7 +122,7 @@ func scan(path string, module string) map[string][]string {
 	content := read(path)
 
 	//匹配控制器方法和参数
-	reg := regexp.MustCompile(`func\s*\(.+` + module + `\s*\)\s*([A-Z][A-Za-z0-9_]+)\s*\((.*)\)`)
+	reg := regexp.MustCompile(`func\s*\(.+` + module + `\s*\)\s*([A-Z_][A-Za-z0-9_]+)\s*\((.*)\)`)
 	if reg == nil {
 		panic("MustCompile err")
 	}
@@ -185,10 +185,17 @@ func Invoke(path string, args map[string]string) interface{} {
 	argvs := make([]reflect.Value, 0, len(route.args))
 	for i := 0; i < len(route.names); i++ {
 
-		name := route.names[i]
+		name  := route.names[i]
+		empty := string(name[0])=="_"
 		param, ok := args[name]
-		if ok == false {
+		if ok == false && empty==false {
 			exception.New("参数缺失:"+name, 100)
+		} else if ok==false && empty==true {
+			if route.args[i].Kind()==reflect.String {
+				param = ""
+			} else {
+				param = "0"
+			}
 		}
 
 		switch route.args[i].Kind() {
