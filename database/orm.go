@@ -274,9 +274,10 @@ func (O *Orm) Order(field string, sort string) *Orm {
 		panic("排序类型只能是asc或desc")
 	}
 
-	_, ok := O.scheme[field]
-	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
-	if !ok && !check {
+	_, ok  := O.scheme[field]
+	check1 := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+	check2 := strings.Contains(" "+O.selectFields+",", " "+field+",")
+	if !ok && !check1 && !check2 {
 		panic(field+":排序应为字段或聚合的别名")
 	}
 
