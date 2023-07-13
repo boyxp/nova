@@ -1,5 +1,6 @@
 #!/bin/bash
 
+host=$(hostname)
 PROGRAM=main
 
 pid() {
@@ -16,7 +17,7 @@ pid() {
 }
 
 build() {
-	go build $PROGRAM.go
+	go build -o $PROGRAM.$host $PROGRAM.go 
 	if [ $? -ne 0 ];then
 		echo "\033[31m build失败，启动终止 \033[0m"
 		return 0
@@ -49,9 +50,8 @@ case "$1" in
 			echo "启动中..."
 			build
 			if [ $? -ne 0 ];then
-				host=$(hostname)
 				today=$(date +%Y-%m-%d)
-				nohup ./$PROGRAM >> access.$host.$today.log 2>&1 &
+				nohup ./$PROGRAM.$host >> access.$host.$today.log 2>&1 &
 				sleep 2
 				PID=$(pid)
 				if [ $PID -gt 0 ];then
