@@ -78,7 +78,7 @@ case "$1" in
 			echo "\033[33m 未运行 \033[0m"
 		fi
 	;;
-	restart)
+	restart|r)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
 			echo "重启中...原pid:$PID"
