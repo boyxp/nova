@@ -492,14 +492,66 @@ func (O *Orm) Sum(field string) int {
 
 func (O *Orm) Count() int {
 	var result int
-	selectFields  := O.selectFields
-	O.selectFields = "count(*) as aggs_count"
 
-	total := O.Value("aggs_count")
-	O.selectFields = selectFields
-	conv,err := strconv.Atoi(total)
-	if err == nil {
-		result = conv
+	if len(O.selectGroup)==0 {
+		selectFields  := O.selectFields
+		O.selectFields = "count(*) as aggs_count"
+
+		total := O.Value("aggs_count")
+
+		O.selectFields = selectFields
+
+		conv,err := strconv.Atoi(total)
+		if err == nil {
+			result = conv
+		}
+
+	} else {
+		last    := ""
+		element := []string{}
+		group   := ","+strings.Join(O.selectGroup, ",")+","
+		fields  := strings.Split(O.selectFields, ",")
+
+		for _, field := range fields {
+			field = strings.TrimSpace(field)
+			_, ok := O.scheme[field]
+			if ok {
+				element = append(element, field)
+				continue
+			}
+
+			if strings.Contains(field, "(") && !strings.Contains(field, ")") {
+				last = field
+				continue
+			}
+
+			idx := strings.LastIndex(field, " ")
+			if idx>-1 && strings.Contains(group, ","+field[idx+1:]+",") {
+				end    := strings.LastIndex(field, ")")
+				element = append(element, last+","+field[0:end+1])
+				last    = ""
+				continue
+			}
+		}
+
+
+
+
+		selectFields  := O.selectFields
+		selectGroup   := O.selectGroup
+
+		O.selectGroup  = []string{}
+		O.selectFields = "count(distinct "+strings.Join(element, ",")+") as aggs_count"
+
+		total := O.Value("aggs_count")
+
+		O.selectFields = selectFields
+		O.selectGroup  = selectGroup
+
+		conv,err := strconv.Atoi(total)
+		if err == nil {
+			result = conv
+		}
 	}
 
 	return result
@@ -586,6 +638,11 @@ func (O *Orm) selectStmt() string {
 
 func (O *Orm) selectColumns() []string {
 	var columns []string
+
+	if strings.Contains(O.selectFields, "aggs_count") {
+		return []string{"aggs_count"}
+	}
+
 	if O.selectFields == "" || O.selectFields=="*" {
 		return O.allFields
 	}
