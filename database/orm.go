@@ -803,9 +803,9 @@ func (O *Orm) initScheme(table string) {
 			allFields = append(allFields, rowField)
 		}
 
-		cache.Store("scheme."+O.dbname+"."+table, scheme)
 		cache.Store("primary."+O.dbname+"."+table, primary)
 		cache.Store("allFields."+O.dbname+"."+table, allFields)
+		cache.Store("scheme."+O.dbname+"."+table, scheme)
 
 	} else {
 		scheme, _    = value.(map[string]string)
