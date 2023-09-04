@@ -89,3 +89,8 @@ func (M Model) Count() int {
 func (M Model) Exist(primary string) bool {
       return M.New().Exist(primary)
 }
+
+func (M Model) Relate(list *[]map[string]string, fields string) {
+      M.New().Relate(list, fields)
+}
+

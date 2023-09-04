@@ -562,6 +562,50 @@ func (O *Orm) Exist(primary string) bool {
 	return res!=nil
 }
 
+func (O *Orm) Relate(list *[]map[string]string, fields string) {
+	ids := []string{"0"}
+	for _, v := range *list {
+		if _id, ok := v[O.primary];ok {
+			ids = append(ids, _id)
+		} else {
+			panic("记录列表缺少主键字段:"+O.primary)
+		}
+	}
+
+
+	_empty  := map[string]string{}
+	_fields := strings.Split(fields, ",")
+	for _, field := range _fields {
+		_, ok := O.scheme[field]
+		if !ok {
+			panic(field+":字段不存在")
+		}
+
+		_empty[field] = ""
+	}
+
+
+	_result := O.Field(O.primary+","+fields).Where(O.primary, "in", ids).Limit(10000).Select()
+	_temp   := map[string]map[string]string{}
+	for _, v := range _result {
+		_temp[v[O.primary]] = v
+	}
+
+
+	merge := map[string]string{}
+	for _, v := range *list {
+		key := v[O.primary]
+		if r, ok := _temp[key];ok {
+			merge = r
+		} else {
+			merge = _empty
+		}
+
+		for _k, _v := range merge {
+			v[_k] = _v
+		}
+	}
+}
 
 func (O *Orm) selectStmt() string {
 	var sql strings.Builder
