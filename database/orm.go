@@ -104,7 +104,27 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 
 	field, ok := conds[0].(string)
 	if !ok {
-		panic("第一个参数应为string类型")
+			maps, ok := conds[0].(map[string]interface{})
+			if ok {
+				for _field,_criteria := range maps {
+						_string, ok := _criteria.(string)
+						if ok {
+							O.Where(_field, _string)
+							continue
+						}
+
+						_set, ok := _criteria.([]interface{})
+						if ok {
+							_tmp := []interface{}{_field}
+							_tmp  = append(_tmp, _set...)
+							O.Where(_tmp...)
+							continue
+						}
+				}
+				return O
+			} else {
+				panic("第一个参数应为string类型或map[string]interface{}类型")
+			}
 	}
 
 	if placeholder_count := strings.Count(field, "?"); placeholder_count > 0 {
