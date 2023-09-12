@@ -183,13 +183,14 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 									}
 
 									if len(criteria)==0 {
-										panic("查询条件应为[]string类型,且至少存在一个元素")
+										criteria = append(criteria, "_in_query_placeholder_")
+										//panic("查询条件应为[]string类型,且至少存在一个元素")
 									}
 
 									placeholders := []string{}
 									for _,v := range criteria {
-										placeholders = append(placeholders, "?")
-										O.selectParams     = append(O.selectParams, v)
+										placeholders   = append(placeholders, "?")
+										O.selectParams = append(O.selectParams, v)
 									}
 
 									O.selectConds  = append(O.selectConds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
