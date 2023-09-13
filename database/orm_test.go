@@ -1,9 +1,11 @@
 package database
 
 import "testing"
+import "os"
 
 //注册数据库连接
 func init() {
+os.Setenv("debug", "yes")
 	Register("database", "test", "root:123456@tcp(localhost:3306)/test")
 }
 
@@ -111,10 +113,26 @@ func TestSelectGtEq(t *testing.T) {
 	}
 }
 
+//多条件查询
+func TestSelectMulti(t *testing.T) {
+	O := Model{"goods"}
+	rows := O.Where(map[string]interface{}{
+		"category":"服装",
+		"name":[]interface{}{"is not", "null"},
+		"price":[]interface{}{"BETWEEN", []string{"200","400"}},
+	}).Select()
+
+	if len(rows)==3 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
 //in条件查询
 func TestSelectIn(t *testing.T) {
 	O := Model{"goods"}
-	rows := O.Where("goods_id", "in", []string{"1","2","3"}).Select()
+	rows := O.Where("goods_id", "in", []string{"2","3","4"}).Select()
 	if len(rows)==3 {
 		t.Log(rows)
 	} else {
