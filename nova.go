@@ -56,6 +56,7 @@ func (A *App) Run() {
 	server.BeforeBegin = func(add string) {
 		pid := syscall.Getpid()
 		log.Println("pid:",pid)
+		log.Println("port:",A.Port)
 		con := []byte(strconv.Itoa(pid))
 		err := ioutil.WriteFile("pid", con, 0644)
 		if err != nil {
