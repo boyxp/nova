@@ -3,6 +3,8 @@ package time
 import "time"
 import "log"
 import "strings"
+import "strconv"
+import "regexp"
 import "github.com/carmo-evan/strtotime"
 
 func Now() time.Time {
@@ -10,6 +12,39 @@ func Now() time.Time {
 }
 
 func Strtotime(str string) time.Time {
+    reg := regexp.MustCompile(`([+-])([0-9]+)\s+(year|month|day|hour|minute|second)`)
+    if reg == nil {
+        panic("MustCompile err")
+    }
+
+    result := reg.FindAllStringSubmatch(str, -1)
+    if len(result)>0 {
+        base := time.Unix(time.Now().Unix(), 0)
+        for _, match := range result {
+                count, _ := strconv.Atoi(match[2])
+                if match[1]=="-" {
+                        count = 0 - count
+                }
+
+                switch match[3] {
+                    case "year":
+                            base = base.AddDate(count, 0, 0)
+                    case "month":
+                            base = base.AddDate(0, count, 0)
+                    case "day":
+                            base = base.AddDate(0, 0, count)
+                    case "hour":
+                            base = base.Add(time.Duration(count) * time.Hour)
+                    case "minute":
+                            base = base.Add(time.Duration(count) * time.Minute)
+                    case "second":
+                            base = base.Add(time.Duration(count) * time.Second)
+                }
+        }
+
+        return base
+    }
+
 	u, err := strtotime.Parse(str, time.Now().Unix())
     if err != nil {
     	log.Fatal("strtotime时间格式化失败:"+str)
