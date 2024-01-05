@@ -56,8 +56,9 @@ func (F *Form) Parse(r *http.Request)map[string]string {
                   params[k] = v
 
             } else {
+               name   := strings.Replace(strings.Replace(part.FileName(), "..", "_", -1), ":", "_", -1)
                k      := part.FormName()
-               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+"_"+part.FileName()
+               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+"_"+name
                dst, _ := os.Create(v)
                defer dst.Close()
                io.Copy(dst, part)
