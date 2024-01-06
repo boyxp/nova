@@ -55,13 +55,14 @@ func (A *App) Run() {
 	server  := endless.NewServer(":"+A.Port, A.Handle())
 	server.BeforeBegin = func(add string) {
 		pid := syscall.Getpid()
-		log.Println("pid:",pid)
-		log.Println("port:",A.Port)
+		log.Println("Process ID:",pid)
 		con := []byte(strconv.Itoa(pid))
 		err := ioutil.WriteFile("pid", con, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Println("Listening and serving HTTP on:", A.Port)
 	}
 
 	err := server.ListenAndServe()
