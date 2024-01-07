@@ -330,10 +330,10 @@ func TestSelectQueryReuse(t *testing.T) {
 	}
 }
 
-//更新操作
+//更新操作，可选更新条数
 func TestUpdate(t *testing.T) {
 	O := Model{"goods"}
-	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口","price":"111"})
+	af := O.Where("goods_id", "1").Limit(1).Update(map[string]string{"name":"可可口口","price":"111"})
 	if af > 0 {
 		t.Log(af)
 	} else {
@@ -341,10 +341,10 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-//删除操作
+//删除操作，可选删除条数
 func TestDelete(t *testing.T) {
 	O := Model{"goods"}
-	af := O.Where("goods_id", "1").Delete()
+	af := O.Where("goods_id", "1").Limit(1).Delete()
 	if af > 0 {
 		t.Log(af)
 	} else {
