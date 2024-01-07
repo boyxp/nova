@@ -57,7 +57,7 @@ func Register(controller interface{}) bool {
 
 	//打印日志
 	if os.Getenv("debug")=="yes" {
-		log.Println("注册控制器："+module)
+		log.Println("注册控制器："+module+"{}")
 	}
 
 	maps := scan(file, module)
@@ -86,6 +86,12 @@ func Register(controller interface{}) bool {
 
 		routeAction := strings.ToLower(action)
 		routes.Store("/"+routeModule+"/"+routeAction, Route{method, params, names})
+
+		//打印日志
+		if os.Getenv("debug")=="yes" {
+			log.Println("\t注册方法："+action+"("+strings.Join(names, ",")+")")
+		}
+
 	}
 
 	return true
@@ -177,7 +183,7 @@ func Invoke(path string, args map[string]string) interface{} {
 
 	value, ok := routes.Load(path)
 	if ok == false {
-		return false
+		return nil
 	}
 	route := value.(Route)
 
@@ -247,7 +253,7 @@ func Invoke(path string, args map[string]string) interface{} {
 
 		default:
 							log.Printf("Unsupported argument type:%s", route.args[i].Kind())
-							return false
+							return nil
 		}
 	}
 
