@@ -2,6 +2,8 @@
 
 基于Golang的轻量级API框架
 
+![](https://img.shields.io/npm/l/vue.svg)
+
 ## 特性
 
 * 支持平滑重启
