@@ -3,6 +3,8 @@ package database
 import "testing"
 import "os"
 
+//测试github工作流
+
 //注册数据库连接
 func init() {
 os.Setenv("debug", "yes")
