@@ -10,7 +10,6 @@ on:
       - 'database/**.go'
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     env:
@@ -19,7 +18,7 @@ jobs:
       DB_PASSWORD: 123456
     steps:
       - name: Git checkout
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
       - name: Start MySQL
         run : |
