@@ -3,7 +3,7 @@ package database
 import "testing"
 import "os"
 
-//测试github工作流
+//测试github工作流,docker模式
 
 //注册数据库连接
 func init() {
