@@ -12,18 +12,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DB_DATABASE: test
-      DB_USER: root
-      DB_PASSWORD: 123456
+    services:
+      mysql:
+        image: mysql:7.0
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: 123456
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
-
-      - name: Start MySQL
-        run : |
-          sudo /etc/init.d/mysql start
-          mysql -e "CREATE DATABASE IF NOT EXISTS $DB_DATABASE;" -u$DB_USER
 
       - name: Set up Go
         uses: actions/setup-go@v4
