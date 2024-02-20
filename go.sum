@@ -6,3 +6,4 @@ github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfC
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/techoner/gophp v0.2.0 h1:vVFoS2XC/NZariagUOhAGqC8p/Ws8R8ARYpj/9lTIAo=
 github.com/techoner/gophp v0.2.0/go.mod h1:NOxB/qoTl4+G82CkQp60T18Az5rOTufCqm83x9i/u7M=
+
