@@ -1,10 +1,10 @@
 package controller
 
 import "log"
-import "github.com/boyxp/nova/exception"
 
 type Auth struct {}
+
 func (A *Auth) Init() {
+	//可以在这里检查登录状态
 	log.Println("init ok")
-	exception.New("未登录", 1001)
 }
