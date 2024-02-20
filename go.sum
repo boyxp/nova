@@ -1,3 +1,5 @@
+github.com/carmo-evan/strtotime v0.0.0-20200108203155-3136cf889e3b h1:U3vQoEOmB8zQ34LR8jQt6XMIdOiq49OZ1aPGjG1fJKE=
+github.com/carmo-evan/strtotime v0.0.0-20200108203155-3136cf889e3b/go.mod h1:IqY2NtbgybBNEdxOZLXCF/OAAisAOiB4+F7/ovbQN8M=
 github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6 h1:6VSn3hB5U5GeA6kQw4TwWIWbOhtvR2hmbBJnTOtqTWc=
 github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6/go.mod h1:YxOVT5+yHzKvwhsiSIWmbAYM3Dr9AEEbER2dVayfBkg=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
