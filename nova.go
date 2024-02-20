@@ -20,6 +20,16 @@ func init() {
 	godotenv.Overload()
 }
 
+func Run() {
+	port := os.Getenv("port")
+	if port=="" {
+		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置")
+		os.Exit(1)
+	}
+
+	Listen(port).Run()
+}
+
 func Listen(port string) *App {
 	if port=="" {
 		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置")
