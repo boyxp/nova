@@ -82,7 +82,7 @@ func (M Memory) GC() {
 		return true
 	})
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(600 * time.Second)
 
 	go M.GC()
 }
