@@ -9,7 +9,7 @@ import "net/http"
 import "io/ioutil"
 import "crypto/md5"
 import "encoding/hex"
-import "github.com/leeqvip/gophp"
+import "github.com/leeqvip/gophp/serialize"
 import "github.com/boyxp/nova/cookie"
 import "github.com/boyxp/nova/register"
 
@@ -61,7 +61,7 @@ func Set(name string, value string) bool {
 
 	data[name] = value
 
-	_byte, _ := gophp.Serialize(data)
+	_byte, _ := serialize.Marshal(data)
 	content := "think|"+string(_byte)
 
 	err := ioutil.WriteFile(path+"/sess_"+ssid, []byte(content), 0666)
@@ -121,7 +121,7 @@ func read() map[string]interface{} {
    		str = str[strings.Index(str, "|")+1:]
    }
 
-	data, _  := gophp.Unserialize([]byte(str))
+	data, _  := serialize.UnMarshal([]byte(str))
 	sess, ok := data.(map[string]interface{})
 	if !ok {
 		return res
