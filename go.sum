@@ -2,5 +2,7 @@ github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6 h1:6VSn3hB5U5GeA6kQ
 github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6/go.mod h1:YxOVT5+yHzKvwhsiSIWmbAYM3Dr9AEEbER2dVayfBkg=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
-github.com/techoner/gophp v0.2.0 h1:vVFoS2XC/NZariagUOhAGqC8p/Ws8R8ARYpj/9lTIAo=
-github.com/techoner/gophp v0.2.0/go.mod h1:NOxB/qoTl4+G82CkQp60T18Az5rOTufCqm83x9i/u7M=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/leeqvip/gophp v1.1.1 h1:+HNBayDVEKnaON0+qj/goDjlZ4Bos7hrdy6/Cb5v5M8=
+github.com/leeqvip/gophp v1.1.1/go.mod h1:DRoO5E9Sk+t4/3LGPCH4QZ/arcASXk9VsqdeTXLgYC4=
