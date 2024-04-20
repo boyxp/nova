@@ -95,21 +95,29 @@ func NewOrm(tag ...string) *Orm {
 	return O
 }
 
+var pool sync.Map
 func Open(tag string) *sql.DB {
-	dsn     := Dsn(tag)
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		panic(err.Error())
+	db, ok := pool.Load("db."+tag)
+	if !ok {
+		dsn     := Dsn(tag)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		err = db.Ping()
+		if err != nil {
+	    	panic(err.Error())
+		}
+
+		db.SetConnMaxLifetime(time.Minute * 10)
+		db.SetMaxOpenConns(2000)
+		db.SetMaxIdleConns(100)
+
+		pool.Store("db."+tag, db)
+
+		return db
 	}
 
-	err = db.Ping()
-	if err != nil {
-    	panic(err.Error())
-	}
-
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(10)
-
-	return db
+	return db.(*sql.DB)
 }

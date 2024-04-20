@@ -7,6 +7,7 @@ import "strconv"
 import "database/sql"
 
 type Orm struct {
+	db *sql.DB
 	dbname string
 	dbtag string
 	table string
@@ -31,6 +32,7 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.dbname = Dbname(dbtag)
 	O.table  = table
 	O.debug  = os.Getenv("debug")
+	O.db     = Open(dbtag)
 
 	O.initScheme(table)
 
@@ -330,9 +332,6 @@ func (O *Orm) Limit(limit int) *Orm {
 func (O *Orm) Select() []map[string]string {
 	var result []map[string]string
 
-	db := Open(O.dbtag)
-	defer db.Close()
-
 	stmt := O.selectStmt()
 
 	if O.debug=="yes" {
@@ -340,7 +339,7 @@ func (O *Orm) Select() []map[string]string {
 		log.Println("PARAMS:\t",O.selectParams)
 	}
 
-	rows, err := db.Query(stmt, O.selectParams...)
+	rows, err := O.db.Query(stmt, O.selectParams...)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -814,14 +813,11 @@ func (O *Orm) updateStmt(data map[string]string) (string,[]interface{}) {
 }
 
 func (O *Orm) execute(_sql string, values []interface{}) sql.Result {
-	db := Open(O.dbtag)
-	defer db.Close()
-
 	if O.debug=="yes" {
 		log.Println("SQL:\t"+_sql)
 	}
 
-	stmt, err := db.Prepare(_sql)
+	stmt, err := O.db.Prepare(_sql)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -842,10 +838,7 @@ func (O *Orm) initScheme(table string) {
 
 	value, ok := cache.Load("scheme."+O.dbname+"."+table)
     if !ok {
-    	db := Open(O.dbtag)
-		defer db.Close()
-
-		rows, err := db.Query("describe "+table)
+		rows, err := O.db.Query("describe "+table)
 		if err != nil {
     		panic(err.Error())
 		}
