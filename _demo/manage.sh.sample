@@ -1,6 +1,9 @@
 #!/bin/bash
 
-PROGRAM=main
+host=$(hostname)
+pwd=$(pwd)
+PROGRAM=$(basename $pwd)
+SOURCE=main
 
 pid() {
 	if [ -f "./pid" ];then
@@ -16,12 +19,12 @@ pid() {
 }
 
 build() {
-	go build $PROGRAM.go
+	go build -o $PROGRAM.$host $SOURCE.go 
 	if [ $? -ne 0 ];then
 		echo "\033[31m build失败，启动终止 \033[0m"
 		return 0
 	else
-		echo "build...成功"
+		echo "build...成功,文件名为:$PROGRAM.$host"
 		return 1
 	fi
 }
@@ -49,9 +52,8 @@ case "$1" in
 			echo "启动中..."
 			build
 			if [ $? -ne 0 ];then
-				host=$(hostname)
 				today=$(date +%Y-%m-%d)
-				nohup ./$PROGRAM >> access.$host.$today.log 2>&1 &
+				nohup ./$PROGRAM.$host >> access.$host.$today.log 2>&1 &
 				sleep 2
 				PID=$(pid)
 				if [ $PID -gt 0 ];then
@@ -78,7 +80,7 @@ case "$1" in
 			echo "\033[33m 未运行 \033[0m"
 		fi
 	;;
-	restart)
+	restart|r)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
 			echo "重启中...原pid:$PID"

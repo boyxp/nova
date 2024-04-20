@@ -2,6 +2,9 @@
 
 基于Golang的轻量级API框架
 
+![](https://img.shields.io/npm/l/vue.svg)
+![dbtest](https://github.com/boyxp/nova/actions/workflows/go.yml/badge.svg)
+
 ## 特性
 
 * 支持平滑重启

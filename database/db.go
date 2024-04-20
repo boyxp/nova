@@ -25,7 +25,13 @@ func Register(tag string, dbname string, dsn string) {
 func Dsn(tag string) string {
 	value, ok := cache.Load("dsn."+tag);
     if !ok {
-        panic("dsn配置不存在:"+tag)
+    	_dsn := os.Getenv(tag+".dsn")
+    	if _dsn!="" {
+    		cache.Store("dsn."+tag, _dsn)
+    		return _dsn
+    	} else {
+        	panic("dsn配置不存在:"+tag)
+    	}
     }
 
     dsn, _ := value.(string)
@@ -36,7 +42,13 @@ func Dsn(tag string) string {
 func Dbname(tag string) string {
 	value, ok := cache.Load("dbname."+tag)
 	if !ok {
-		panic("dbname配置不存在:"+tag)
+		_dbname := os.Getenv(tag+".dbname")
+    	if _dbname!="" {
+    		cache.Store("dbname."+tag, _dbname)
+    		return _dbname
+    	} else {
+        	panic("dbname配置不存在:"+tag)
+    	}
 	}
 
 	dbname, _ := value.(string)

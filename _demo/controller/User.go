@@ -14,7 +14,9 @@ func init() {
    router.Register(&User{})
 }
 
-type User struct {}
+type User struct {
+	Auth
+}
 
 func (C *User) Hello() map[string]string {
 	return map[string]string{"Item0":"0、当前项目目录为 _demo","Item1":"1、端口和数据库配置在 .env","Item2":"2、控制器目录为controller","Item3":"3、模型目录为model","Item4":"4、进程管理使用 sh manage.sh","Item5":"5、更多示例见User控制器",}
@@ -104,13 +106,13 @@ func (C *User) Jump() {
 
 //数据库添加操作
 func (C *User) Add() map[string]interface{} {
-	user_id := model.User.Insert(map[string]string{"user_name":"xiaoming","password":"123"})
+	user_id := model.User.Insert(map[string]string{"user":"xiaoming","password":"123"})
 	return map[string]interface{}{"user_id":user_id}
 }
 
 //数据库列表读取
 func (C *User) List() []map[string]string {
-	list := model.User.Where("user_name", "xiaoming").Select()
+	list := model.User.Where("user", "xiaoming").Select()
 	return list
 }
 

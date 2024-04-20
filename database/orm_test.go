@@ -1,9 +1,13 @@
 package database
 
 import "testing"
+import "os"
+
+//测试github工作流,docker模式,mysql8.0
 
 //注册数据库连接
 func init() {
+os.Setenv("debug", "yes")
 	Register("database", "test", "root:123456@tcp(localhost:3306)/test")
 }
 
@@ -111,10 +115,26 @@ func TestSelectGtEq(t *testing.T) {
 	}
 }
 
+//多条件查询
+func TestSelectMulti(t *testing.T) {
+	O := Model{"goods"}
+	rows := O.Where(map[string]interface{}{
+		"category":"服装",
+		"name":[]interface{}{"is not", "null"},
+		"price":[]interface{}{"BETWEEN", []string{"200","400"}},
+	}).Select()
+
+	if len(rows)==3 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
 //in条件查询
 func TestSelectIn(t *testing.T) {
 	O := Model{"goods"}
-	rows := O.Where("goods_id", "in", []string{"1","2","3"}).Select()
+	rows := O.Where("goods_id", "in", []string{"2","3","4"}).Select()
 	if len(rows)==3 {
 		t.Log(rows)
 	} else {
@@ -312,10 +332,10 @@ func TestSelectQueryReuse(t *testing.T) {
 	}
 }
 
-//更新操作
+//更新操作，可选更新条数
 func TestUpdate(t *testing.T) {
 	O := Model{"goods"}
-	af := O.Where("goods_id", "1").Update(map[string]string{"name":"可可口口","price":"111"})
+	af := O.Where("goods_id", "1").Limit(1).Update(map[string]string{"name":"可可口口","price":"111"})
 	if af > 0 {
 		t.Log(af)
 	} else {
@@ -323,10 +343,10 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-//删除操作
+//删除操作，可选删除条数
 func TestDelete(t *testing.T) {
 	O := Model{"goods"}
-	af := O.Where("goods_id", "1").Delete()
+	af := O.Where("goods_id", "1").Limit(1).Delete()
 	if af > 0 {
 		t.Log(af)
 	} else {

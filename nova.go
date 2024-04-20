@@ -20,6 +20,16 @@ func init() {
 	godotenv.Overload()
 }
 
+func Run() {
+	port := os.Getenv("port")
+	if port=="" {
+		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置,采用默认端口9800")
+		port = "9800"
+	}
+
+	Listen(port).Run()
+}
+
 func Listen(port string) *App {
 	if port=="" {
 		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置")
@@ -55,12 +65,14 @@ func (A *App) Run() {
 	server  := endless.NewServer(":"+A.Port, A.Handle())
 	server.BeforeBegin = func(add string) {
 		pid := syscall.Getpid()
-		log.Println("pid:",pid)
 		con := []byte(strconv.Itoa(pid))
 		err := ioutil.WriteFile("pid", con, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		log.Println("Process ID:", pid)
+		log.Println("Listening and serving HTTP on:", A.Port)
 	}
 
 	err := server.ListenAndServe()

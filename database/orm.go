@@ -104,7 +104,27 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 
 	field, ok := conds[0].(string)
 	if !ok {
-		panic("第一个参数应为string类型")
+			maps, ok := conds[0].(map[string]interface{})
+			if ok {
+				for _field,_criteria := range maps {
+						_string, ok := _criteria.(string)
+						if ok {
+							O.Where(_field, _string)
+							continue
+						}
+
+						_set, ok := _criteria.([]interface{})
+						if ok {
+							_tmp := []interface{}{_field}
+							_tmp  = append(_tmp, _set...)
+							O.Where(_tmp...)
+							continue
+						}
+				}
+				return O
+			} else {
+				panic("第一个参数应为string类型或map[string]interface{}类型")
+			}
 	}
 
 	if placeholder_count := strings.Count(field, "?"); placeholder_count > 0 {
@@ -183,13 +203,14 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 									}
 
 									if len(criteria)==0 {
-										panic("查询条件应为[]string类型,且至少存在一个元素")
+										criteria = append(criteria, "_in_query_placeholder_")
+										//panic("查询条件应为[]string类型,且至少存在一个元素")
 									}
 
 									placeholders := []string{}
 									for _,v := range criteria {
-										placeholders = append(placeholders, "?")
-										O.selectParams     = append(O.selectParams, v)
+										placeholders   = append(placeholders, "?")
+										O.selectParams = append(O.selectParams, v)
 									}
 
 									O.selectConds  = append(O.selectConds, field+" "+opr+"("+strings.Join(placeholders, ",")+")")
@@ -274,9 +295,10 @@ func (O *Orm) Order(field string, sort string) *Orm {
 		panic("排序类型只能是asc或desc")
 	}
 
-	_, ok := O.scheme[field]
-	check := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
-	if !ok && !check {
+	_, ok  := O.scheme[field]
+	check1 := strings.Contains(" "+O.selectFields+" ", " "+field+" ")
+	check2 := strings.Contains(" "+O.selectFields+",", " "+field+",")
+	if !ok && !check1 && !check2 {
 		panic(field+":排序应为字段或聚合的别名")
 	}
 
