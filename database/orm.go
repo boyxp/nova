@@ -323,6 +323,8 @@ func (O *Orm) Select() []map[string]string {
 		panic(err.Error())
 	}
 
+	defer rows.Close()
+
 	columns  := O.selectColumns()
 	values   := make([]sql.RawBytes, len(columns))
 	scanArgs := make([]interface{}, len(columns))
@@ -825,6 +827,8 @@ func (O *Orm) initScheme(table string) {
 		if err != nil {
     		panic(err.Error())
 		}
+
+		defer rows.Close()
 
 		for rows.Next() {
 			var rowField, rowType, rowNull, rowKey, rowExtra string
