@@ -2,6 +2,7 @@ package database
 
 import "os"
 import "log"
+import "time"
 import "sync"
 import "unicode"
 import "runtime"
@@ -88,6 +89,15 @@ func Open(tag string) *sql.DB {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	err = db.Ping()
+	if err != nil {
+    	panic(err.Error())
+	}
+
+	db.SetConnMaxLifetime(time.Minute * 3)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
 
 	return db
 }
