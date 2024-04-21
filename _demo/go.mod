@@ -3,7 +3,7 @@ module api
 go 1.17
 
 require (
-	github.com/boyxp/nova v0.0.0-20240331062937-c50709dec5d7 // indirect
+	github.com/boyxp/nova v0.0.0-20240420152450-57f267706f37 // indirect
 	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.2 // indirect
