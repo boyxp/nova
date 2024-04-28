@@ -45,7 +45,7 @@ func Strtotime(str string) time.Time {
         return base
     }
 
-	u, err := strtotime.Parse(str, time.Now().Unix())
+	u, err := strtotime.Parse(str+" +0800", time.Now().Unix())
     if err != nil {
     	log.Fatal("strtotime时间格式化失败:"+str)
     }
