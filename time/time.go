@@ -145,3 +145,31 @@ func Date(format string, _time ...time.Time) string {
 func Timestamp() string {
 	return time.Now().Format("2006-01-02 15:04:05")
 }
+
+func Readable(timestamp string) string {
+	now := time.Now()
+
+	curr := Strtotime(timestamp)
+
+	diff := now.Sub(curr).Seconds()
+
+	if diff>86400 {
+		return timestamp
+	}
+
+	str := now.Sub(curr).String()
+
+	if strings.Contains(str, "h") {
+		return str[0:strings.Index(str, "h")]+"小时前"
+	}
+
+	if strings.Contains(str, "m") {
+		return str[0:strings.Index(str, "m")]+"分钟前"
+	}
+
+	if strings.Contains(str, "s") {
+		return str[0:strings.Index(str, ".")]+"秒前"
+	}
+
+	return str
+}
