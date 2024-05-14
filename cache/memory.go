@@ -10,14 +10,14 @@ func init() {
 var cube sync.Map
 
 type cell struct {
-	Data interface{}
+	Data any
 	Ttl time.Time
 }
 
 type Memory struct {
 }
 
-func (M Memory) Set(key string, value interface{}, ttl ...uint) bool {
+func (M Memory) Set(key string, value any, ttl ...uint) bool {
 	var sec uint = 600
 	if len(ttl)>0 {
 		sec = ttl[0]
@@ -31,7 +31,7 @@ func (M Memory) Set(key string, value interface{}, ttl ...uint) bool {
 	return true
 }
 
-func (M Memory) Get(key string) interface{} {
+func (M Memory) Get(key string) any {
 	v, ok := cube.Load(key)
 
 	if ok {
@@ -64,7 +64,7 @@ func (M Memory) Ttl(key string) uint {
 }
 
 func (M Memory) Flush() bool {
-	cube.Range(func(key, value interface{}) bool {
+	cube.Range(func(key, value any) bool {
 		cube.Delete(key)
 		return true
 	})
@@ -75,7 +75,7 @@ func (M Memory) Flush() bool {
 func (M Memory) GC() {
 	now := time.Now()
 
-	cube.Range(func(key, value interface{}) bool {
+	cube.Range(func(key, value any) bool {
 		if now.After(value.(cell).Ttl) {
 			cube.Delete(key)
 		}
