@@ -58,7 +58,7 @@ func TestInsert(t *testing.T) {
 //主键条件查询
 func TestSelectPrimary(t *testing.T) {
 	O := Model{"goods"}
-	row := O.Where("1").Find()
+	row := O.Find("2")
 	_, ok := row["name"]
 	if ok {
 		t.Log(row)

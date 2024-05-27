@@ -62,8 +62,8 @@ func (M Model) Select() []map[string]string {
       return M.New().Select()
 }
 
-func (M Model) Find() map[string]string {
-      return M.New().Find()
+func (M Model) Find(primary ...string) map[string]string {
+      return M.New().Find(primary...)
 }
 
 func (M Model) Value(field string) string {

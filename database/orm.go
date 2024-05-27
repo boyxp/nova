@@ -389,8 +389,12 @@ func (O *Orm) Select() []map[string]string {
 	return result
 }
 
-func (O *Orm) Find() map[string]string {
+func (O *Orm) Find(primary ...string) map[string]string {
 	var result map[string]string 
+
+	if len(primary)>0 {
+		O.Where(primary[0])
+	}
 
 	selectPage   := O.selectPage
 	selectLimit  := O.selectLimit
