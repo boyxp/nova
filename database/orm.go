@@ -14,6 +14,7 @@ type Orm struct {
 	primary string
 	scheme map[string]string
 	allFields []string
+	total int
 
 	selectFields string
 	selectConds []string
@@ -33,6 +34,7 @@ func (O *Orm) Init(dbtag string, table string) *Orm {
 	O.table  = table
 	O.debug  = os.Getenv("debug")
 	O.db     = Open(dbtag)
+	O.total  = -1
 
 	O.initScheme(table)
 
@@ -577,7 +579,36 @@ func (O *Orm) Count() int {
 		}
 	}
 
+	O.total = result
+
 	return result
+}
+
+func (O *Orm) Total() int {
+	return O.Count()
+}
+
+func (O *Orm) TotalPage() int {
+	if O.total<0 {
+		O.Count()
+	}
+
+	if O.selectLimit==0 {
+		O.selectLimit = 20
+	}
+
+	var total_page int
+	if O.total==0 {
+		total_page = 0
+
+	} else if O.total%O.selectLimit==0 {
+		total_page = O.total/O.selectLimit
+
+	} else {
+		total_page = int(O.total/O.selectLimit)+1
+	}
+
+	return total_page
 }
 
 func (O *Orm) Exist(primary string) bool {

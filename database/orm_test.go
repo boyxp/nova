@@ -353,3 +353,19 @@ func TestDelete(t *testing.T) {
 		t.Fail()
 	}
 }
+
+//取得总条数和总页数
+func TestPage(t *testing.T) {
+	O := Model{"goods"}
+	m := O.Limit(5)
+	list  := m.Select()
+	total := m.Total()
+	total_page := m.TotalPage()
+	if total > 0 {
+		t.Log(list)
+		t.Log(total)
+		t.Log(total_page)
+	} else {
+		t.Fail()
+	}
+}

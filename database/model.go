@@ -86,6 +86,14 @@ func (M Model) Count() int {
       return M.New().Count()
 }
 
+func (M Model) Total() int {
+      return M.New().Count()
+}
+
+func (M Model) TotalPage() int {
+      return M.New().TotalPage()
+}
+
 func (M Model) Exist(primary string) bool {
       return M.New().Exist(primary)
 }
