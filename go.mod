@@ -1,6 +1,6 @@
 module github.com/boyxp/nova
 
-go 1.17
+go 1.20
 
 require (
 	github.com/carmo-evan/strtotime v0.0.0-20200108203155-3136cf889e3b // indirect
