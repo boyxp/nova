@@ -23,7 +23,7 @@
 ```bash
 module api
 
-go 1.17
+go 1.20
 ```
 安装依赖
 ```bash
