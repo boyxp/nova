@@ -28,11 +28,11 @@ func Strtotime(str string) time.Time {
 
                 switch match[3] {
                     case "year":
-                            base = base.AddDate(count, 0, 0)
+                            base = AddDate(base, count, 0, 0)
                     case "month":
-                            base = base.AddDate(0, count, 0)
+                            base = AddDate(base, 0, count, 0)
                     case "day":
-                            base = base.AddDate(0, 0, count)
+                            base = AddDate(base, 0, 0, count)
                     case "hour":
                             base = base.Add(time.Duration(count) * time.Hour)
                     case "minute":
@@ -51,6 +51,19 @@ func Strtotime(str string) time.Time {
     }
 
     return time.Unix(u,0)
+}
+
+//https://libuba.com/2021/01/08/golan-adddate-%E4%B8%B4%E7%95%8C%E5%9D%91/
+func AddDate(t time.Time, year int, month int, day int) time.Time {
+	targetDate := t.AddDate(year, month, -t.Day()+1)
+	targetDay  := targetDate.AddDate(0, 1, -1).Day()
+
+	if targetDay > t.Day() {
+		targetDay = t.Day()
+	}
+
+	targetDate = targetDate.AddDate(0, 0, targetDay-1+day)
+	return targetDate
 }
 
 func Date(format string, _time ...time.Time) string {
