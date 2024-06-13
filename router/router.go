@@ -164,11 +164,7 @@ func scan(path string, module string) map[string][]string {
 
 //检查路由是否匹配
 func Match(path string) bool {
-	path = strings.ToLower(path)
-	if strings.Contains(path, "?") {
-		path = path[0:strings.Index(path, "?")]
-	}
-
+	path   = strings.ToLower(path)
 	_, ok := routes.Load(path)
 
 	return ok
@@ -176,11 +172,7 @@ func Match(path string) bool {
 
 //匹配路由并调用控制器方法
 func Invoke(path string, args map[string]string) interface{} {
-	path = strings.ToLower(path)
-	if strings.Contains(path, "?") {
-		path = path[0:strings.Index(path, "?")]
-	}
-
+	path       = strings.ToLower(path)
 	value, ok := routes.Load(path)
 	if ok == false {
 		return nil
