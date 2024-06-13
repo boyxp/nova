@@ -86,7 +86,9 @@ func (A *App) Run() {
 }
 
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.RequestURI=="/ping" {
+	log.Println(r.Method, r.RequestURI)
+
+	if r.URL.Path=="/ping" {
 		w.WriteHeader(200)
         w.Write([]byte("pong"))
         return
@@ -98,13 +100,13 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	register.SetResponseWriter(w)
 	register.SetRequest(r)
 
-	match := router.Match(r.RequestURI)
+	match := router.Match(r.URL.Path)
 	if match != true {
-		exception.New("路由地址错误:"+r.RequestURI, 100)
+		exception.New("路由地址错误:"+r.URL.Path, 100)
 	}
 
 	params := A.Request.Parse(r)
-	result := router.Invoke(r.RequestURI, params)
+	result := router.Invoke(r.URL.Path, params)
 	if result != nil {
 		A.Response.Render(result)
 	}
@@ -146,6 +148,6 @@ func (A *App) Catch() {
                    	log.Println("\t", i-2, ")", file, line)
                 }
 
-                log.Println("\n")
+                log.Println()
         }
 }
