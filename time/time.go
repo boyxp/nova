@@ -1,7 +1,6 @@
 package time
 
 import "time"
-import "log"
 import "strings"
 import "strconv"
 import "regexp"
@@ -47,7 +46,7 @@ func Strtotime(str string) time.Time {
 
 	u, err := strtotime.Parse(str+" +0800", time.Now().Unix())
     if err != nil {
-    	log.Fatal("strtotime时间格式化失败:"+str)
+    	panic("strtotime时间格式化失败:"+str)
     }
 
     return time.Unix(u,0)
