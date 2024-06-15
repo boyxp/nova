@@ -1,38 +1,38 @@
 #!/bin/bash
 
-if [ -d "_demo" ];then
-	echo "_demo项目目录已存在"
+empty=$(ls -A | wc -l)
+if [ $empty != "0" ]; then
+	echo "\033[33;5m!!!请在空目录内执行初始化命令\033[0m"
 	exit 1
 fi
 
-echo "克隆项目..."
-git clone git@github.com:boyxp/nova.git
+pwd=$(pwd)
+echo "当前目录为\033[32m $pwd \033[0m \n"
 
+if [ ! -d "/tmp/nova" ];then
+	echo "1/5 首次克隆nova项目到临时目录...\n"
+	git clone git@github.com:boyxp/nova.git /tmp/nova
+else
+	echo "1/5 克隆nova项目到临时目录...\n"
+fi
 
-mv nova/_demo .
+sleep 1
 
-echo "示例文件改名..."
-cd _demo
+echo "2/5 正在拷贝项目结构文件...\n"
+cp -r /tmp/nova/_demo/ .
 
+echo "3/5 正在重命名模版文件...\n"
 mv manage.sh.sample manage.sh
-
 mv .env.sample .env
 
-echo "下载go依赖..."
+echo "4/5 正在安装依赖....\n"
+go mod tidy
 
-go mod download github.com/boyxp/nova
+echo "5/5 初始化仓库....\n"
+git init
+git add .
+git commit -m '初始化'
 
-go get github.com/boyxp/nova/database@latest
-
-go get github.com/boyxp/nova@latest
-
-echo "当前项目目录为 _demo"
-
-echo "启动监听端口：9800...(可按 Ctrl+c 终止进程)"
-echo "\033[32m浏览器打开以下地址：
-
-127.0.0.1:9800/user/hello
-
-\033[0m"
-
-go run main.go
+echo "\033[32m\n\n初始化完毕\033[0m\n"
+echo "运行以下命令启动项目\n"
+echo "\033[35mgo run main.go\033[0m\n\n\n"
