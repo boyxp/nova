@@ -60,7 +60,7 @@ curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
 
 ### 初始化项目
 ```bash
-$ curl https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
+curl https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
 ```
 默认创建 _demo 目录，可以改名为项目目录，直接初始化git
 
