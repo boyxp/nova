@@ -7,6 +7,7 @@
 
 ## 特性
 
+* 一键初始化项目，快速开发
 * 支持平滑重启
 * 路由自动注册
 * 编码友好的Orm查询，无需字段映射，无需定义返回结构体
@@ -14,20 +15,13 @@
 * 请求无需传递Context
 * PHP开发者熟悉的异常处理
 * 低侵入性设计，现有struct一行代码即可对外服务
-* 一键初始化项目，快速开发
 * 支持中间件
 * 低耦合模块化设计
 
 ## 快速上手
 创建 go.mod
 ```bash
-module api
-
-go 1.20
-```
-安装依赖
-```bash
-go get github.com/boyxp/nova
+go mod init api
 ```
 创建 hello.go
 ```go
@@ -46,9 +40,15 @@ func (h *Hello) Hi(name string) map[string]string {
    return map[string]string{"name":"hello "+name}
 }
 ```
+
+
+安装依赖
+```bash
+go mod tidy
+```
 启动
 ```bash
-go run hello.go &
+go run hello.go
 ```
 
 POST请求接口
@@ -60,9 +60,8 @@ curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
 
 ### 初始化项目
 ```bash
-curl https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
+curl -s https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
 ```
-默认创建 _demo 目录，可以改名为项目目录，直接初始化git
 
 ### 进程管理
 
