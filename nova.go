@@ -21,22 +21,23 @@ func init() {
 }
 
 func Run() {
-	port := os.Getenv("port")
-	if port=="" {
-		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置,采用默认端口9800")
-		port = "9800"
-	}
-
-	Listen(port).Run()
+	Listen().Run()
 }
 
-func Listen(port string) *App {
-	if port=="" {
-		log.Printf("\033[1;31;40m%s\033[0m\n",".env配置文件不存在或port未设置")
-		os.Exit(1)
+func Listen(port ...string) *App {
+	var Port string = "9800"
+	if len(port)==0 {
+		envPort := os.Getenv("port")
+		if envPort=="" {
+			log.Printf("\033[1;31;40m%s\033[0m\n",".env 配置文件不存在或port未设置,采用默认端口9800")
+		} else {
+			Port = envPort
+		}
+	} else {
+		Port = port[0]
 	}
 
-	return &App{Port:port, Request:&request.Form{}, Response:&response.Json{}}
+	return &App{Port:Port, Request:&request.Form{}, Response:&response.Json{}}
 }
 
 type App struct {
