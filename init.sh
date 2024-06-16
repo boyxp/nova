@@ -18,7 +18,7 @@ fi
 
 sleep 1
 
-echo "2/5 正在拷贝项目结构文件...\n"
+echo "\n2/5 正在拷贝项目结构文件...\n"
 cp -r /tmp/nova/_demo/ .
 
 echo "3/5 正在重命名模版文件...\n"
