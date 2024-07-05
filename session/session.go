@@ -52,12 +52,11 @@ func Set(name string, value string) bool {
 
 	if sess==nil {
 		data = make(map[string]interface{})
-
-		cookie.Set("PHPSESSID", ssid)
-
 	} else {
 		data = sess
 	}
+
+	cookie.Set("PHPSESSID", ssid)
 
 	data[name] = value
 
