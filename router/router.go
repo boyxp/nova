@@ -32,16 +32,32 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
-	//反射控制器
+	//反射控制器值
 	v := reflect.ValueOf(controller)
 
-	//非控制器或无方法则直接返回
-	if v.NumMethod() == 0 {
+	//反射控制器类型
+	t := reflect.TypeOf(controller)
+
+	//取得控制器完整名称
+	module := t.String()
+
+	//禁止注册控制器指针
+	if strings.Contains(module, "*") {
+		log.Println("控制器",module,"禁止注册&指针")
 		return false
 	}
 
-	//取得控制器完整名称
-	module := reflect.TypeOf(controller).String()
+	//非控制器或无方法则直接返回
+	if v.NumMethod() == 0 {
+		log.Println("控制器",module,"无可执行结构体方法")
+		return false
+	}
+
+	//不允许控制器有属性
+	if t.NumField() > 0 {
+		log.Println("控制器",module,"不可有结构体字段:", t.Field(0).Name)
+		return false
+	}
 
 	//取得路由模块名称
 	routeModule := strings.Replace(module, "*", "", -1)
