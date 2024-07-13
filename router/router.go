@@ -128,7 +128,7 @@ func scan(path string, module string) map[string][]string {
 	content := read(path)
 
 	//匹配控制器方法和参数
-	reg := regexp.MustCompile(`func\s*\(.+` + module + `\s*\)\s*([A-Z_][A-Za-z0-9_]+)\s*\((.*)\)`)
+	reg := regexp.MustCompile(`func\s*\((.+` + module + `)\s*\)\s*([A-Z_][A-Za-z0-9_]+)\s*\((.*)\)`)
 	if reg == nil {
 		panic("MustCompile err")
 	}
@@ -136,8 +136,13 @@ func scan(path string, module string) map[string][]string {
 	maps   := map[string][]string{}
 	result := reg.FindAllStringSubmatch(content, -1)
 	for _, match := range result {
-		action := match[1]
-		args   := strings.TrimSpace(match[2])
+		receiver := match[1]
+		action   := match[2]
+		args     := strings.TrimSpace(match[3])
+
+		if strings.Contains(receiver, "*") {
+			panic("控制器"+module + ":" + action + "方法不可使用指针 *"+module+"，应改为值传递 "+module)
+		}
 
 		if len(args) == 0 {
 			maps[action] = []string{}
