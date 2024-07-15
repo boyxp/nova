@@ -1,14 +1,21 @@
 package router
 
 import "testing"
+import "log"
 
-type Hello struct {}
-func (h *Hello) Hi(name string) string {
+type Hello struct {
+}
+
+func (h Hello) Init() {
+}
+
+func (h Hello) Hi(name string) string {
+	log.Println("show:", name)
 	return "hello "+name
 }
 
 func TestRegister(t *testing.T) {
-	res := Register(&Hello{})
+	res := Register(Hello{})
 
 	if res != true {
 		t.Log("路由注册失败")

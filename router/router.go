@@ -32,16 +32,29 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
-	//反射控制器
+	//反射控制器值
 	v := reflect.ValueOf(controller)
+
+	//反射控制器类型
+	t := reflect.TypeOf(controller)
+
+	//取得控制器完整名称
+	module := t.String()
+
+	//禁止注册控制器指针
+	if strings.Contains(module, "*") {
+		log.Fatal("\033[7;31;40m 控制器 ",module," 禁止注册&指针 \033[0m")
+	}
 
 	//非控制器或无方法则直接返回
 	if v.NumMethod() == 0 {
-		return false
+		log.Fatal("\033[7;31;40m 控制器 ",module," 无可执行结构体方法 \033[0m")
 	}
 
-	//取得控制器完整名称
-	module := reflect.TypeOf(controller).String()
+	//不允许控制器有属性
+	if t.NumField() > 0 {
+		log.Fatal("\033[7;31;40m 控制器 ",module," 不可有结构体字段:", t.Field(0).Name, " \033[0m")
+	}
 
 	//取得路由模块名称
 	routeModule := strings.Replace(module, "*", "", -1)
@@ -81,7 +94,7 @@ func Register(controller interface{}) bool {
 
 		//判断参数一致
 		if len(params) != len(names) {
-			panic(module + ":" + action + "参数匹配失败")
+			log.Fatal("\033[7;31;40m 控制器 ",module," 方法 ", action, " 参数匹配失败，请确保每个参数逗号分隔 \033[0m")
 		}
 
 		routeAction := strings.ToLower(action)
@@ -101,21 +114,21 @@ func Register(controller interface{}) bool {
 func read(path string) string {
 	list, err := filepath.Glob(path[0:len(path)-2]+"*")
 	if err != nil {
-		panic(err)
+		log.Fatal("\033[7;31;40m ",path," 文件名匹配失败： ", err, " \033[0m")
 	}
 
 	var code string = ""
 	for _,f := range list {
 		file, err := os.Open(f)
 		if err != nil {
-			panic(err)
+			log.Fatal("\033[7;31;40m ",file," 文件打开失败： ", err, " \033[0m")
 		}
 
 		defer file.Close()
 
 		content, err := ioutil.ReadAll(file)
 		if err != nil {
-			panic(err)
+			log.Fatal("\033[7;31;40m ",file," 文件读取失败： ", err, " \033[0m")
 		}
 
 		code = code+string(content)
@@ -128,16 +141,21 @@ func scan(path string, module string) map[string][]string {
 	content := read(path)
 
 	//匹配控制器方法和参数
-	reg := regexp.MustCompile(`func\s*\(.+` + module + `\s*\)\s*([A-Z_][A-Za-z0-9_]+)\s*\((.*)\)`)
+	reg := regexp.MustCompile(`func\s*\((.+` + module + `)\s*\)\s*([A-Z_][A-Za-z0-9_]+)\s*\((.*)\)`)
 	if reg == nil {
-		panic("MustCompile err")
+		log.Fatal("\033[7;31;40m 正则表达式编译失败 \033[0m")
 	}
 
 	maps   := map[string][]string{}
 	result := reg.FindAllStringSubmatch(content, -1)
 	for _, match := range result {
-		action := match[1]
-		args   := strings.TrimSpace(match[2])
+		receiver := match[1]
+		action   := match[2]
+		args     := strings.TrimSpace(match[3])
+
+		if strings.Contains(receiver, "*") {
+			log.Fatal("\033[7;31;40m 控制器 ",module," 方法 ", action, " 不可使用指针 *"+module+"，应改为值传递 ",module," \033[0m")
+		}
 
 		if len(args) == 0 {
 			maps[action] = []string{}
