@@ -53,7 +53,11 @@ func Register(controller interface{}) bool {
 
 	//不允许控制器有属性
 	if t.NumField() > 0 {
-		log.Fatal("\033[7;31;40m 控制器 ",module," 不可有结构体字段:", t.Field(0).Name, " \033[0m")
+		for i:=0;i<t.NumField();i++ {
+			if t.Field(i).Anonymous==false {
+				log.Fatal("\033[7;31;40m 控制器 ",module," 不可有结构体字段:", t.Field(i).Name, " \033[0m")
+			}
+		}
 	}
 
 	//取得路由模块名称
