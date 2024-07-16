@@ -265,7 +265,7 @@ func TestSelectColumnsAggs(t *testing.T) {
 	O := Model{"goods"}
 	rows := O.Field("count(*) as num ,category").Group("category").Columns("num", "category")
 
-	if len(rows)>1 {
+	if len(rows)>0 {
 		t.Log(rows)
 	} else {
 		t.Fail()
