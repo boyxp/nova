@@ -78,6 +78,10 @@ func (M Model) Columns(fields ...string) map[string]string {
       return M.New().Columns(fields...)
 }
 
+func (M Model) Map(fields ...string) map[string]map[string]string {
+      return M.New().Map(fields...)
+}
+
 func (M Model) Sum(field string) int {
       return M.New().Sum(field)
 }
