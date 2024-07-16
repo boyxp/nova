@@ -465,14 +465,16 @@ func (O *Orm) Columns(fields ...string) map[string]string {
 	selectFields := O.selectFields
 
 	_, ok_key := O.scheme[key]
-	check_key := strings.Contains(" "+O.selectFields+" ", " "+key+" ")
-	if !ok_key && !check_key {
+	check_key1 := strings.Contains(" "+O.selectFields+" ", " "+key+" ")
+	check_key2 := strings.Contains(" "+O.selectFields+",", " "+key+",")
+	if !ok_key && !check_key1 && !check_key2 {
 		panic(key+":应为字段或聚合的别名")
 	}
 
 	_, ok_value := O.scheme[value]
-	check_value := strings.Contains(" "+O.selectFields+" ", " "+value+" ")
-	if !ok_value && !check_value {
+	check_value1 := strings.Contains(" "+O.selectFields+" ", " "+value+" ")
+	check_value2 := strings.Contains(" "+O.selectFields+",", " "+value+",")
+	if !ok_value && !check_value1 && !check_value2 {
 		panic(value+":应为字段或聚合的别名")
 	}
 
