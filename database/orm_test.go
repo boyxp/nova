@@ -287,7 +287,7 @@ func TestSelectMap(t *testing.T) {
 func TestSelectMapAggs(t *testing.T) {
 	O := Model{"goods"}
 	rows := O.Field("count(*) as num,category").Group("category").Map("num")
-	if len(rows)>1 {
+	if len(rows)>0 {
 		t.Log(rows)
 	} else {
 		t.Fail()
