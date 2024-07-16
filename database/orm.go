@@ -501,6 +501,48 @@ func (O *Orm) Columns(fields ...string) map[string]string {
 	return result
 }
 
+func (O *Orm) Map(fields ...string) map[string]map[string]string {
+	var key string
+
+	if(len(fields)==0) {
+		key   = O.primary
+	} else {
+		key   = fields[0]
+	}
+
+	selectFields := O.selectFields
+
+	_, ok_key := O.scheme[key]
+	check_key1 := strings.Contains(" "+O.selectFields+" ", " "+key+" ")
+	check_key2 := strings.Contains(" "+O.selectFields+",", " "+key+",")
+	if !ok_key && !check_key1 && !check_key2 {
+		panic(key+":应为字段或聚合的别名")
+	}
+
+	if strings.Contains(O.selectFields, "(") && len(O.selectGroup)==0 {
+		panic("查询了聚合数据但未设置聚合字段")
+	}
+
+	list := O.Select()
+
+	O.selectFields = selectFields
+
+
+	var result = map[string]map[string]string{}
+	if len(list)>0 {
+		_, ok := list[0][key]
+		if !ok {
+			panic(key+":key必须包含在读取字段里")
+		}
+
+		for _, v := range list {
+			result[v[key]] = v
+		}
+	}
+
+	return result
+}
+
 func (O *Orm) Sum(field string) int {
 	_, ok := O.scheme[field]
 	if !ok {
