@@ -272,6 +272,28 @@ func TestSelectColumnsAggs(t *testing.T) {
 	}
 }
 
+//取K=>row记录map
+func TestSelectMap(t *testing.T) {
+	O := Model{"goods"}
+	rows := O.Map()
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
+//取K=>row聚合值map
+func TestSelectMapAggs(t *testing.T) {
+	O := Model{"goods"}
+	rows := O.Field("count(*) as num,category").Group("category").Map("num")
+	if len(rows)>1 {
+		t.Log(rows)
+	} else {
+		t.Fail()
+	}
+}
+
 //取最大最小值
 func TestSelectMaxMin(t *testing.T) {
 	O := Model{"goods"}
