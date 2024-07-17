@@ -331,6 +331,24 @@ func (O *Orm) Limit(limit int) *Orm {
 	return O
 }
 
+func (O *Orm) Result() *Result {
+	list := O.Select()
+
+	fields  := map[string]string{}
+	for _,v := range O.selectColumns() {
+		fields[v] = v
+	}
+
+	return &Result {
+		Page   : O.selectPage,
+		Limit  : O.selectLimit,
+		orm    : O,
+		list   : list,
+		fields : fields,
+		total  : -1,
+	}
+}
+
 func (O *Orm) Select() []map[string]string {
 	var result []map[string]string
 
@@ -633,7 +651,11 @@ func (O *Orm) Count() int {
 }
 
 func (O *Orm) Total() int {
-	return O.Count()
+	if O.total<0 {
+		O.Count()
+	}
+
+	return O.total
 }
 
 func (O *Orm) TotalPage() int {
