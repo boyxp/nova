@@ -345,7 +345,6 @@ func (O *Orm) Result() *Result {
 		orm    : O,
 		list   : list,
 		fields : fields,
-		total  : -1,
 	}
 }
 
