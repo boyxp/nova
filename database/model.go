@@ -58,6 +58,10 @@ func (M Model) Limit(limit int) *Orm {
       return M.New().Limit(limit)
 }
 
+func (M Model) Result() *Result {
+      return M.New().Result()
+}
+
 func (M Model) Select() []map[string]string {
       return M.New().Select()
 }
