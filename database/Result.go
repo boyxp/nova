@@ -148,7 +148,7 @@ func (R *Result) Fields() map[string]string {
 	return R.fields
 }
 
-//返回标准格式响应
+//返回列表分页标准格式响应
 func (R *Result) Response() map[string]any {
 	return map[string]any{
 		"total"      : R.Total(),
