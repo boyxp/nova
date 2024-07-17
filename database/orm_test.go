@@ -391,3 +391,130 @@ func TestPage(t *testing.T) {
 		t.Fail()
 	}
 }
+
+//返回结果集列表
+func TestResultList(t *testing.T) {
+	res := Model{"goods"}.Field("name,goods_id").Result()
+	list := res.List()
+
+	if len(list)>0 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集指定列
+func TestResultValues(t *testing.T) {
+	res := Model{"goods"}.Field("name,goods_id").Result()
+	list := res.Values("goods_id")
+
+	if len(list)>0 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集指定列做key的切片
+func TestResultColumns(t *testing.T) {
+	res := Model{"goods"}.Field("name,goods_id").Result()
+	list := res.Columns("name", "goods_id")
+
+	if len(list)>0 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集指定列做key的切片
+func TestResultMap(t *testing.T) {
+	res := Model{"goods"}.Field("name,goods_id").Result()
+	list := res.Map("goods_id")
+
+	if len(list)>0 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集对应请求的总条数
+func TestResultTotal(t *testing.T) {
+	res   := Model{"goods"}.Field("name,goods_id").Result()
+	total := res.Total()
+
+	if total>0 {
+		t.Log(total)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集对应请求的总页数
+func TestResultTotalPage(t *testing.T) {
+	res   := Model{"goods"}.Field("name,goods_id").Result()
+	total := res.TotalPage()
+
+	if total>0 {
+		t.Log(total)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集是否为空
+func TestResultEmpty(t *testing.T) {
+	res   := Model{"goods"}.Field("name,goods_id").Result()
+	empty := res.Empty()
+
+	if empty==false {
+		t.Log(empty)
+	} else {
+		t.Fail()
+	}
+}
+
+//结果集合并
+func TestResultMerge(t *testing.T) {
+	res1 := Model{"goods"}.Field("name,goods_id").Page(1).Limit(3).Result()
+	res2 := Model{"goods"}.Field("price,goods_id").Page(1).Limit(3).Result()
+
+	res1.Merge(res2)
+
+	list := res1.List()
+
+	_, ok1 := list[0]["name"]
+	_, ok2 := list[0]["price"]
+
+	if ok1 && ok2 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集字段
+func TestResultFields(t *testing.T) {
+	res   := Model{"goods"}.Field("name,goods_id").Result()
+	fields := res.Fields()
+
+	if len(fields)>1 {
+		t.Log(fields)
+	} else {
+		t.Fail()
+	}
+}
+
+//返回结果集字段
+func TestResultResponse(t *testing.T) {
+	res   := Model{"goods"}.Field("name,goods_id").Result()
+	response := res.Response()
+
+	if _,ok:=response["list"];ok {
+		t.Log(response)
+	} else {
+		t.Fail()
+	}
+}
