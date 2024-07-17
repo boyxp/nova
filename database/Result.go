@@ -6,7 +6,6 @@ type Result struct {
 	orm *Orm
 	list []map[string]string
 	fields map[string]string
-	total int
 }
 
 //返回查询结果切片
@@ -105,12 +104,43 @@ func (R *Result) Empty() bool {
 	return len(R.list)==0
 }
 
-//===找到两个结果集的唯一交集key，合并结果集
-func (R *Result) Merge(M Result) bool {
-	//分别取字段列表，找交集key
+//找到两个结果集的唯一交集key，合并结果集
+func (R *Result) Merge(M *Result) []map[string]string {
+	//查找结果集字段交集
+	fields := M.Fields()
+	keys   := []string{}
+	for k, _ := range fields {
+		if _, ok := R.fields[k];ok {
+			keys = append(keys, k)
+		}
+	}
+
+	if len(keys)==0 {
+		panic("两个结果集没有字段交集")
+	}
+
+	if len(keys)>1 {
+		panic("两个结果集只能一个字段交集")
+	}
+
 	//按交集key转map
+	keymap := M.Map(keys[0])
+
 	//遍历合并，更新结果
-	return false
+	ik := keys[0]
+	for rk, rv := range R.list {
+		if _, ok := keymap[rv[ik]];ok {
+			for mk, mv := range keymap[rv[ik]] {
+				R.list[rk][mk] = mv
+			}
+		} else {
+			for fk, _ := range fields {
+				R.list[rk][fk] = ""
+			}
+		}
+	}
+
+	return R.list
 }
 
 //返回结果集字段
