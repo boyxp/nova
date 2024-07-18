@@ -14,7 +14,7 @@ import "github.com/boyxp/nova/cookie"
 import "github.com/boyxp/nova/register"
 
 func Get(name string) string {
-	sess := read()
+	sess, _, _ := read()
 	if sess==nil {
 		return ""
 	}
@@ -44,14 +44,12 @@ func Get(name string) string {
 }
 
 func Set(name string, value string) bool {
-	var data map[string]interface{}
+	var data map[string]any
 
-	sess := read()
-	ssid := getSsid()
-	path := getPath()
+	sess, ssid, path := read()
 
 	if sess==nil {
-		data = make(map[string]interface{})
+		data = make(map[string]any)
 	} else {
 		data = sess
 	}
@@ -109,8 +107,8 @@ func getPath() string {
 	return "/var/lib/php/session/"
 }
 
-func read() map[string]interface{} {
-	var res map[string]interface{}
+func read() (map[string]any, string, string) {
+	var res map[string]any
 
 	ssid := getSsid()
 	path := getPath()
@@ -118,13 +116,13 @@ func read() map[string]interface{} {
 	file, err := os.Open(path+"/sess_"+ssid)
 	defer file.Close()
    	if err != nil {
-        return res
+        return res, ssid, path
    	}
 
    content, err := ioutil.ReadAll(file)
    str := string(content)
    if len(str)==0 {
-   	    return res
+   	    return res, ssid, path
    }
 
    if strings.Contains(str, "|") {
@@ -132,12 +130,12 @@ func read() map[string]interface{} {
    }
 
 	data, _  := serialize.UnMarshal([]byte(str))
-	sess, ok := data.(map[string]interface{})
+	sess, ok := data.(map[string]any)
 	if !ok {
-		return res
+		return res, ssid, path
 	}
 
-	return sess
+	return sess, ssid, path
 }
 
 func getIP(req *http.Request) string {
