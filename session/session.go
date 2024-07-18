@@ -68,8 +68,14 @@ func Set(name string, value string) bool {
 	return err == nil
 }
 
+func Id() string {
+	return getSsid()
+}
+
 func getSsid() string {
-	ssid := cookie.Get("PHPSESSID")
+	var ssid string
+
+	ssid = cookie.Get("PHPSESSID")
 	if ssid != "" {
 		return ssid
 	}
@@ -79,7 +85,12 @@ func getSsid() string {
 		return ssid
 	}
 
-	req := register.GetRequest()
+	req  := register.GetRequest()
+	ssid  = req.Header.Get("X-SESSID")
+	if ssid != "" {
+		return ssid
+	}
+
 	ip  := getIP(req)
 	id  := getRoutineId()
 
@@ -133,8 +144,10 @@ func getIP(req *http.Request) string {
     remoteAddr := req.RemoteAddr
     if ip := req.Header.Get("X-Real-IP"); ip != "" {
         remoteAddr = ip
+
     } else if ip = req.Header.Get("X-Forwarded-For"); ip != "" {
         remoteAddr = ip
+
     } else {
         remoteAddr, _, _ = net.SplitHostPort(remoteAddr)
     }
