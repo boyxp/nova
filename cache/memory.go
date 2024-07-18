@@ -24,8 +24,8 @@ func (M Memory) Set(key string, value any, ttl ...uint) bool {
 	}
 
 	cube.Store(key, cell{
-		Data:value,
-		Ttl:time.Now().Add(time.Second * time.Duration(sec)),
+		Data : value,
+		Ttl  : time.Now().Add(time.Second * time.Duration(sec)),
 	})
 
 	return true
@@ -34,11 +34,15 @@ func (M Memory) Set(key string, value any, ttl ...uint) bool {
 func (M Memory) Get(key string) any {
 	v, ok := cube.Load(key)
 
-	if ok {
-		return v.(cell).Data
+	if !ok {
+		return nil
 	}
 
-	return nil
+	if time.Now().After(v.(cell).Ttl) {
+		return nil
+	}
+
+	return v.(cell).Data
 }
 
 func (M Memory) Delete(key string) bool {
@@ -56,11 +60,11 @@ func (M Memory) Exist(key string) bool {
 func (M Memory) Ttl(key string) uint {
 	v, ok := cube.Load(key)
 
-	if ok {
-		return uint(v.(cell).Ttl.Sub(time.Now()).Seconds())
+	if !ok {
+		return 0
 	}
 
-	return 0
+	return uint(v.(cell).Ttl.Sub(time.Now()).Seconds())
 }
 
 func (M Memory) Flush() bool {
