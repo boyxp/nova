@@ -73,18 +73,19 @@ func Id() string {
 func getSsid() string {
 	var ssid string
 
-	ssid = cookie.Get("PHPSESSID")
-	if ssid != "" {
-		return ssid
+	req := register.GetRequest()
+
+	c1, err1 := req.Cookie("PHPSESSID")
+	if err1 == nil {
+		return c1.Value
 	}
 
-	ssid = cookie.Get("GOSESSID")
-	if ssid != "" {
-		return ssid
+	c2, err2 := req.Cookie("GOSESSID")
+	if err2 == nil {
+		return c2.Value
 	}
-
-	req  := register.GetRequest()
-	ssid  = req.Header.Get("X-SESSID")
+	
+	ssid = req.Header.Get("X-SESSID")
 	if ssid != "" {
 		return ssid
 	}
