@@ -12,6 +12,32 @@ import "encoding/hex"
 import "github.com/leeqvip/gophp/serialize"
 import "github.com/boyxp/nova/cookie"
 import "github.com/boyxp/nova/register"
+import "github.com/boyxp/nova/cache"
+
+func All() map[string]string {
+	result := map[string]string{}
+	sess, _, _ := read()
+
+	for k, v := range sess {
+		switch v.(type) {
+			case string :
+					value, ok := v.(string)
+					if !ok {
+						result[k] = ""
+					}
+					result[k] = value
+
+			case int   :
+				   value, ok := v.(int)
+				   if !ok {
+						result[k] = ""
+				   }
+				   result[k] = strconv.Itoa(value)
+		}
+	}
+
+	return result
+}
 
 func Get(name string) string {
 	sess, _, _ := read()
@@ -61,7 +87,15 @@ func Set(name string, value string) bool {
 	_byte, _ := serialize.Marshal(data)
 	content := "think|"+string(_byte)
 
-	err := ioutil.WriteFile(path+"/sess_"+ssid, []byte(content), 0666)
+	real := path+"/sess_"+ssid
+	err  := ioutil.WriteFile(real, []byte(content), 0666)
+
+	//cache
+	info, er := os.Stat(real)
+    if er == nil {
+        key := info.ModTime().Format("20060102150405")
+        cache.Memory{}.Set(ssid+key, data)
+    }
 
 	return err == nil
 }
@@ -113,8 +147,20 @@ func read() (map[string]any, string, string) {
 
 	ssid := getSsid()
 	path := getPath()
+	real := path+"/sess_"+ssid
 
-	file, err := os.Open(path+"/sess_"+ssid)
+	//cache
+	info, er := os.Stat(real)
+    if er == nil {
+        key  := info.ModTime().Format("20060102150405")
+        memo := cache.Memory{}.Get(ssid+key)
+        if memo!=nil {
+        	return memo.(map[string]any), ssid, path
+        }
+    }
+
+
+	file, err := os.Open(real)
 	defer file.Close()
    	if err != nil {
         return res, ssid, path
