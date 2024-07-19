@@ -16,9 +16,13 @@ import "github.com/boyxp/nova/cache"
 
 func All() map[string]string {
 	result := map[string]string{}
-	sess, _, _ := read()
+	sess, _, _ := read("r")
 
 	for k, v := range sess {
+		if k=="_t" {
+			continue
+		}
+
 		switch v.(type) {
 			case string :
 					value, ok := v.(string)
@@ -40,7 +44,7 @@ func All() map[string]string {
 }
 
 func Get(name string) string {
-	sess, _, _ := read()
+	sess, _, _ := read("r")
 	if sess==nil {
 		return ""
 	}
@@ -72,7 +76,7 @@ func Get(name string) string {
 func Set(name string, value string) bool {
 	var data map[string]any
 
-	sess, ssid, path := read()
+	sess, ssid, path := read("w")
 
 	if sess==nil {
 		data = make(map[string]any)
@@ -89,13 +93,6 @@ func Set(name string, value string) bool {
 
 	real := path+"/sess_"+ssid
 	err  := ioutil.WriteFile(real, []byte(content), 0666)
-
-	//cache
-	info, er := os.Stat(real)
-    if er == nil {
-        key := info.ModTime().Format("20060102150405")
-        cache.Memory{}.Set(ssid+key, data)
-    }
 
 	return err == nil
 }
@@ -142,8 +139,8 @@ func getPath() string {
 	return "/var/lib/php/session/"
 }
 
-func read() (map[string]any, string, string) {
-	var res map[string]any
+func read(mode string) (map[string]any, string, string) {
+	var empty map[string]any
 
 	ssid := getSsid()
 	path := getPath()
@@ -152,10 +149,13 @@ func read() (map[string]any, string, string) {
 	//cache
 	info, er := os.Stat(real)
     if er == nil {
-        key  := info.ModTime().Format("20060102150405")
-        memo := cache.Memory{}.Get(ssid+key)
+        memo := cache.Memory{}.Get("sess_"+ssid)
         if memo!=nil {
-        	return memo.(map[string]any), ssid, path
+        	modTime := info.ModTime()
+        	sess    := memo.(map[string]any)
+        	if modTime==sess["_t"] {
+        		return sess, ssid, path
+        	}
         }
     }
 
@@ -163,13 +163,13 @@ func read() (map[string]any, string, string) {
 	file, err := os.Open(real)
 	defer file.Close()
    	if err != nil {
-        return res, ssid, path
+        return empty, ssid, path
    	}
 
    content, err := ioutil.ReadAll(file)
    str := string(content)
    if len(str)==0 {
-   	    return res, ssid, path
+   	    return empty, ssid, path
    }
 
    if strings.Contains(str, "|") {
@@ -179,8 +179,19 @@ func read() (map[string]any, string, string) {
 	data, _  := serialize.UnMarshal([]byte(str))
 	sess, ok := data.(map[string]any)
 	if !ok {
-		return res, ssid, path
+		return empty, ssid, path
 	}
+
+	if mode=="w" {
+		return sess, ssid, path
+	}
+
+	//cache
+	info, er = os.Stat(real)
+    if er == nil {
+        sess["_t"] = info.ModTime()
+        cache.Memory{}.Set("sess_"+ssid, sess, 3600)
+    }
 
 	return sess, ssid, path
 }
