@@ -147,18 +147,19 @@ func read(mode string) (map[string]any, string, string) {
 	real := path+"/sess_"+ssid
 
 	//cache
-	info, er := os.Stat(real)
-    if er == nil {
-        memo := cache.Memory{}.Get("sess_"+ssid)
-        if memo!=nil {
-        	modTime := info.ModTime()
-        	sess    := memo.(map[string]any)
-        	if modTime==sess["_t"] {
-        		return sess, ssid, path
-        	}
-        }
-    }
-
+	if mode=="r" {
+		info, er := os.Stat(real)
+	    if er == nil {
+	        memo := cache.Memory{}.Get("sess_"+ssid)
+	        if memo!=nil {
+	        	modTime := info.ModTime()
+	        	sess    := memo.(map[string]any)
+	        	if modTime==sess["_t"] {
+	        		return sess, ssid, path
+	        	}
+	        }
+	    }
+	}
 
 	file, err := os.Open(real)
 	defer file.Close()
@@ -182,16 +183,14 @@ func read(mode string) (map[string]any, string, string) {
 		return empty, ssid, path
 	}
 
-	if mode=="w" {
-		return sess, ssid, path
-	}
-
 	//cache
-	info, er = os.Stat(real)
-    if er == nil {
-        sess["_t"] = info.ModTime()
-        cache.Memory{}.Set("sess_"+ssid, sess, 3600)
-    }
+	if mode=="r" {
+		info, er := os.Stat(real)
+    	if er == nil {
+        	sess["_t"] = info.ModTime()
+        	cache.Memory{}.Set("sess_"+ssid, sess, 3600)
+    	}
+	}
 
 	return sess, ssid, path
 }
