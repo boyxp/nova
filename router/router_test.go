@@ -1,6 +1,7 @@
 package router
 
 import "testing"
+import "log"
 
 type Auth struct {
 	Uid string
@@ -14,7 +15,8 @@ type Hello struct {
 	Auth
 }
 
-func (h *Hello) Hi(name string) string {
+func (h *Hello) Hi(name string, _remark string, _num int) string {
+	log.Println(_remark, _num)
 	return "hello "+name+h.Uid
 }
 
@@ -32,14 +34,14 @@ func TestRegister(t *testing.T) {
 }
 
 func TestMatch(t *testing.T) {
-	res := Match("/router/Hello/Hi")
+	res := Match("/router/hello/hi")
 
 	if res != true {
 		t.Log("路由匹配失败")
 		t.FailNow()
 	}
 
-	fail := Match("/router/Hello/Ok")
+	fail := Match("/router/hello/ok")
 	if fail != false {
 		t.Log("路由匹配失败")
 		t.FailNow()
@@ -50,7 +52,7 @@ func TestMatch(t *testing.T) {
 
 func TestInvoke(t *testing.T) {
 	name := "eve"
-	res  := Invoke("/router/Hello/Hi", map[string]string{"name":name})
+	res  := Invoke("/router/hello/hi", map[string]string{"name":name, "_remark":"ok", "_num":"1024"})
 
 	if res != "hello "+name+"1024" {
 		t.Log("路由调用失败")
