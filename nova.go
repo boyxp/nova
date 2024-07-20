@@ -5,7 +5,6 @@ import "log"
 import "runtime"
 import "syscall"
 import "strconv"
-import "strings"
 import "net/http"
 import "io/ioutil"
 import "github.com/fvbock/endless"
@@ -102,9 +101,8 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	register.SetResponseWriter(w)
 	register.SetRequest(r)
 
-	path   := strings.ToLower(r.URL.Path)
 	params := A.Request.Parse(r)
-	result := router.Invoke(path, params)
+	result := router.Invoke(r.URL.Path, params)
 	if result != nil {
 		A.Response.Render(result)
 	}
