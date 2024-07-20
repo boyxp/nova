@@ -89,12 +89,6 @@ func (A *App) Run() {
 func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.Method, r.RequestURI)
 
-	if r.URL.Path=="/ping" {
-		w.WriteHeader(200)
-        w.Write([]byte("pong"))
-        return
-	}
-
 	defer register.Clean()
 	defer A.Catch()
 
