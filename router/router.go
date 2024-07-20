@@ -17,6 +17,7 @@ type Route struct {
 	method string
 	args   []reflect.Type
 	names  []string
+	def map[string]string
 	init bool
 }
 
@@ -86,9 +87,9 @@ func Register(controller interface{}) bool {
 		}
 
 		//遍历方法参数取得参数类型
-		params := make([]reflect.Type, 0, method.Type().NumIn())
+		args := make([]reflect.Type, 0, method.Type().NumIn())
 		for j := 0; j < method.Type().NumIn(); j++ {
-			params = append(params, method.Type().In(j))
+			args = append(args, method.Type().In(j))
 		}
 
 		//判断是否有参数名称
@@ -98,12 +99,25 @@ func Register(controller interface{}) bool {
 		}
 
 		//判断参数一致
-		if len(params) != len(names) {
+		if len(args) != len(names) {
 			log.Fatal("\033[7;31;40m 控制器 ",module," 方法 ", action, " 参数匹配失败，请确保每个参数逗号分隔 \033[0m")
 		}
 
+		//可选参数填充默认值
+		def := map[string]string{}
+		for k, name := range names {
+			if string(name[0])=="_" {
+				if args[k].Kind()==reflect.String {
+					def[name] = ""
+				} else {
+					def[name] = "0"
+				}
+			}
+		}
+
+		//存储路由配置
 		routeAction := strings.ToLower(action)
-		routes.Store("/"+routeModule+"/"+routeAction, Route{refT, action, params, names, init})
+		routes.Store("/"+routeModule+"/"+routeAction, Route{refT, action, args, names, def, init})
 
 		//打印日志
 		if os.Getenv("debug")=="yes" {
@@ -193,27 +207,27 @@ func Match(path string) bool {
 
 //匹配路由并调用控制器方法
 func Invoke(path string, args map[string]string) interface{} {
+	//取得路由
+	path       = strings.ToLower(path)
 	value, ok := routes.Load(path)
 	if ok == false {
 		exception.New("路由地址错误:"+path, 100)
 	}
-	route := value.(Route)
+	route  := value.(Route)
+
+	//合并参数默认值和实际参数
+	params := route.def
+	for k, v := range args {
+		params[k] = v
+	}
 
 	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
 	for i := 0; i < len(route.names); i++ {
-
-		name  := route.names[i]
-		empty := string(name[0])=="_"
-		param, ok := args[name]
-		if ok == false && empty==false {
+		name      := route.names[i]
+		param, ok := params[name]
+		if ok == false {
 			exception.New("参数缺失:"+name, 100)
-		} else if ok==false && empty==true {
-			if route.args[i].Kind()==reflect.String {
-				param = ""
-			} else {
-				param = "0"
-			}
 		}
 
 		switch route.args[i].Kind() {
