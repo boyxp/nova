@@ -102,12 +102,7 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	register.SetResponseWriter(w)
 	register.SetRequest(r)
 
-	path  := strings.ToLower(r.URL.Path)
-	match := router.Match(path)
-	if match != true {
-		exception.New("路由地址错误:"+r.URL.Path, 100)
-	}
-
+	path   := strings.ToLower(r.URL.Path)
 	params := A.Request.Parse(r)
 	result := router.Invoke(path, params)
 	if result != nil {
