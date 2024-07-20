@@ -13,9 +13,11 @@ import "path/filepath"
 import "github.com/boyxp/nova/exception"
 
 type Route struct {
-	method reflect.Value
+	ref reflect.Type
+	method string
 	args   []reflect.Type
 	names  []string
+	init bool
 }
 
 //控制器目录名称（可修改）
@@ -32,32 +34,23 @@ func Register(controller interface{}) bool {
 		return false
 	}
 
-	//反射控制器值
-	v := reflect.ValueOf(controller)
-
 	//反射控制器类型
-	t := reflect.TypeOf(controller)
+	refT := reflect.TypeOf(controller)
+
+	//反射控制器值
+	refV := reflect.New(refT)
 
 	//取得控制器完整名称
-	module := t.String()
+	module := refT.String()
 
 	//禁止注册控制器指针
 	if strings.Contains(module, "*") {
-		log.Fatal("\033[7;31;40m 控制器 ",module," 禁止注册&指针 \033[0m")
+		log.Fatal("\033[7;31;40m 控制器 ",module," 禁止注册&指针，请去掉&符号 \033[0m")
 	}
 
 	//非控制器或无方法则直接返回
-	if v.NumMethod() == 0 {
+	if refV.NumMethod() == 0 {
 		log.Fatal("\033[7;31;40m 控制器 ",module," 无可执行结构体方法 \033[0m")
-	}
-
-	//不允许控制器有属性
-	if t.NumField() > 0 {
-		for i:=0;i<t.NumField();i++ {
-			if t.Field(i).Anonymous==false {
-				log.Fatal("\033[7;31;40m 控制器 ",module," 不可有结构体字段:", t.Field(i).Name, " \033[0m")
-			}
-		}
 	}
 
 	//取得路由模块名称
@@ -79,10 +72,18 @@ func Register(controller interface{}) bool {
 
 	maps := scan(file, module)
 
+	//是否需要初始化
+	init := refV.MethodByName("Init").IsValid()
+
 	//遍历控制器方法
-	for i := 0; i < v.NumMethod(); i++ {
-		method := v.Method(i)
-		action := v.Type().Method(i).Name
+	for i := 0; i < refV.NumMethod(); i++ {
+		method := refV.Method(i)
+		action := refV.Type().Method(i).Name
+
+		//忽略初始化方法
+		if action=="Init" {
+			continue
+		}
 
 		//遍历方法参数取得参数类型
 		params := make([]reflect.Type, 0, method.Type().NumIn())
@@ -102,7 +103,7 @@ func Register(controller interface{}) bool {
 		}
 
 		routeAction := strings.ToLower(action)
-		routes.Store("/"+routeModule+"/"+routeAction, Route{method, params, names})
+		routes.Store("/"+routeModule+"/"+routeAction, Route{refT, action, params, names, init})
 
 		//打印日志
 		if os.Getenv("debug")=="yes" {
@@ -157,8 +158,8 @@ func scan(path string, module string) map[string][]string {
 		action   := match[2]
 		args     := strings.TrimSpace(match[3])
 
-		if strings.Contains(receiver, "*") {
-			log.Fatal("\033[7;31;40m 控制器 ",module," 方法 ", action, " 不可使用指针 *"+module+"，应改为值传递 ",module," \033[0m")
+		if strings.Contains(receiver, "*")==false {
+			log.Fatal("\033[7;31;40m 控制器 ",module," 方法 ", action, " 必须使用指针 *"+module+" \033[0m")
 		}
 
 		if len(args) == 0 {
@@ -271,18 +272,16 @@ func Invoke(path string, args map[string]string) interface{} {
 		}
 	}
 
-	//检查是否存在Init方法，存在则优先调用
-	idx := strings.LastIndex(path, "/")
-	key := path[0:idx]+"/init"
-	val, ok := routes.Load(key)
-	if ok {
-		init  := val.(Route)
-		empty := make([]reflect.Value, 0, 0)
-		init.method.Call(empty)
+	//生成新的零值指针
+	p := reflect.New(route.ref)
+
+	//如果需要初始化
+	if route.init {
+		p.MethodByName("Init").Call(make([]reflect.Value, 0, 0))
 	}
 
-
-	result := route.method.Call(argvs)
+	//调用目标路由方法
+	result := p.MethodByName(route.method).Call(argvs)
 	if len(result) == 0 {
 		return nil
 	}
