@@ -5,6 +5,7 @@ import "log"
 import "runtime"
 import "syscall"
 import "strconv"
+import "strings"
 import "net/http"
 import "io/ioutil"
 import "github.com/fvbock/endless"
@@ -101,13 +102,14 @@ func (A *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	register.SetResponseWriter(w)
 	register.SetRequest(r)
 
-	match := router.Match(r.URL.Path)
+	path  := strings.ToLower(r.URL.Path)
+	match := router.Match(path)
 	if match != true {
 		exception.New("路由地址错误:"+r.URL.Path, 100)
 	}
 
 	params := A.Request.Parse(r)
-	result := router.Invoke(r.URL.Path, params)
+	result := router.Invoke(path, params)
 	if result != nil {
 		A.Response.Render(result)
 	}

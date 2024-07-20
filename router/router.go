@@ -187,15 +187,12 @@ func scan(path string, module string) map[string][]string {
 
 //检查路由是否匹配
 func Match(path string) bool {
-	path   = strings.ToLower(path)
 	_, ok := routes.Load(path)
-
 	return ok
 }
 
 //匹配路由并调用控制器方法
 func Invoke(path string, args map[string]string) interface{} {
-	path       = strings.ToLower(path)
 	value, ok := routes.Load(path)
 	if ok == false {
 		return nil
