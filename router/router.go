@@ -195,7 +195,7 @@ func Match(path string) bool {
 func Invoke(path string, args map[string]string) interface{} {
 	value, ok := routes.Load(path)
 	if ok == false {
-		return nil
+		exception.New("路由地址错误:"+path, 100)
 	}
 	route := value.(Route)
 
