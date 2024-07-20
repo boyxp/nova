@@ -211,22 +211,26 @@ func Invoke(path string, args map[string]string) interface{} {
 	path       = strings.ToLower(path)
 	value, ok := routes.Load(path)
 	if ok == false {
+		//如果为ping请求直接返回
+		if path=="/ping" {
+			return "pong"
+		}
+
 		exception.New("路由地址错误:"+path, 100)
 	}
 	route  := value.(Route)
 
-	//合并参数默认值和实际参数
-	params := route.def
-	for k, v := range args {
-		params[k] = v
-	}
-
 	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
 	for i := 0; i < len(route.names); i++ {
-		name      := route.names[i]
-		param, ok := params[name]
-		if ok == false {
+		var param string
+
+		name       := route.names[i]
+		if val, ok := args[name];ok {
+			param = val
+		} else if val, ok := route.def[name];ok {
+			param = val
+		} else {
 			exception.New("参数缺失:"+name, 100)
 		}
 
