@@ -1,18 +1,24 @@
 package router
 
 import "testing"
-import "log"
+
+type Auth struct {
+	Uid string
+}
+
+func (A *Auth) Init() {
+	A.Uid = "1024"
+}
 
 type Hello struct {
+	Auth
 }
 
-func (h Hello) Init() {
+func (h *Hello) Hi(name string) string {
+	return "hello "+name+h.Uid
 }
 
-func (h Hello) Hi(name string) string {
-	log.Println("show:", name)
-	return "hello "+name
-}
+
 
 func TestRegister(t *testing.T) {
 	res := Register(Hello{})
@@ -46,7 +52,7 @@ func TestInvoke(t *testing.T) {
 	name := "eve"
 	res  := Invoke("/router/Hello/Hi", map[string]string{"name":name})
 
-	if res != "hello "+name {
+	if res != "hello "+name+"1024" {
 		t.Log("路由调用失败")
 		t.FailNow()
 	}
