@@ -13,12 +13,12 @@ import "path/filepath"
 import "github.com/boyxp/nova/exception"
 
 type Route struct {
-	ref reflect.Type
+	ref    reflect.Type
 	method string
-	args   []reflect.Type
+	args   []string
 	names  []string
-	def map[string]string
-	init bool
+	def    map[string]string
+	init   bool
 }
 
 //控制器目录名称（可修改）
@@ -87,9 +87,9 @@ func Register(controller interface{}) bool {
 		}
 
 		//遍历方法参数取得参数类型
-		args := make([]reflect.Type, 0, method.Type().NumIn())
+		args := make([]string, 0, method.Type().NumIn())
 		for j := 0; j < method.Type().NumIn(); j++ {
-			args = append(args, method.Type().In(j))
+			args = append(args, method.Type().In(j).Kind().String())
 		}
 
 		//判断是否有参数名称
@@ -107,7 +107,7 @@ func Register(controller interface{}) bool {
 		def := map[string]string{}
 		for k, name := range names {
 			if string(name[0])=="_" {
-				if args[k].Kind()==reflect.String {
+				if args[k]=="string" {
 					def[name] = ""
 				} else {
 					def[name] = "0"
@@ -218,71 +218,72 @@ func Invoke(path string, args map[string]string) interface{} {
 
 		exception.New("路由地址错误:"+path, 100)
 	}
-	route  := value.(Route)
+	route := value.(Route)
 
 	//检查参数并强制转换参数类型
 	argvs := make([]reflect.Value, 0, len(route.args))
-	for i := 0; i < len(route.names); i++ {
+	for i, name := range route.names {
 		var param string
 
-		name       := route.names[i]
 		if val, ok := args[name];ok {
 			param = val
+
 		} else if val, ok := route.def[name];ok {
 			param = val
+
 		} else {
 			exception.New("参数缺失:"+name, 100)
 		}
 
-		switch route.args[i].Kind() {
-		case reflect.String:
+		switch route.args[i] {
+			case "string":
 							argvs = append(argvs, reflect.ValueOf(param))
 
-		case reflect.Int:
+			case "int":
 							value, _ := strconv.Atoi(param)
 							argvs = append(argvs, reflect.ValueOf(value))
-		case reflect.Int8:
+			case "int8":
 							value, _ := strconv.ParseInt(param, 10, 8)
 							argvs = append(argvs, reflect.ValueOf(int8(value)))
-		case reflect.Int16:
+			case "int16":
 							value, _ := strconv.ParseInt(param, 10, 16)
 							argvs = append(argvs, reflect.ValueOf(int16(value)))
-		case reflect.Int32:
+			case "int32":
 							value, _ := strconv.ParseInt(param, 10, 32)
 							argvs = append(argvs, reflect.ValueOf(int32(value)))
-		case reflect.Int64:
+			case "int64":
 							value, _ := strconv.ParseInt(param, 10, 64)
 							argvs = append(argvs, reflect.ValueOf(value))
 
-		case reflect.Uint:
+			case "uint":
 							value, _ := strconv.ParseUint(param, 10, 32)
 							argvs = append(argvs, reflect.ValueOf(uint(value)))
-		case reflect.Uint8:
+			case "uint8":
 							value, _ := strconv.ParseUint(param, 10, 8)
 							argvs = append(argvs, reflect.ValueOf(uint8(value)))
-		case reflect.Uint16:
+			case "uint16":
 							value, _ := strconv.ParseUint(param, 10, 16)
 							argvs = append(argvs, reflect.ValueOf(uint16(value)))
-		case reflect.Uint32:
+			case "uint32":
 							value, _ := strconv.ParseUint(param, 10, 32)
 							argvs = append(argvs, reflect.ValueOf(uint32(value)))
-		case reflect.Uint64:
+			case "uint64":
 							value, _ := strconv.ParseUint(param, 10, 64)
 							argvs = append(argvs, reflect.ValueOf(value))
 
-		case reflect.Bool:
+			case "bool":
 							value, _ := strconv.ParseBool(param)
 							argvs = append(argvs, reflect.ValueOf(value))
 
-		case reflect.Float32:
+			case "float32":
 							value, _ := strconv.ParseFloat(param, 32)
 							argvs = append(argvs, reflect.ValueOf(float32(value)))
-		case reflect.Float64:
+			case "float64":
 							value, _ := strconv.ParseFloat(param, 64)
 							argvs = append(argvs, reflect.ValueOf(value))
 
-		default:
-							log.Printf("Unsupported argument type:%s", route.args[i].Kind())
+			default:
+							log.Printf("Unsupported argument type:%s", route.args[i])
 							return nil
 		}
 	}
