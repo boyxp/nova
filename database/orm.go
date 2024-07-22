@@ -336,6 +336,8 @@ func (O *Orm) Result() *Result {
 
 	fields  := map[string]string{}
 	for _,v := range O.selectColumns() {
+		idx := strings.LastIndex(v, " ")
+		v    = v[idx+1:]
 		fields[v] = v
 	}
 
