@@ -629,14 +629,17 @@ func (O *Orm) Count() int {
 
 		selectFields  := O.selectFields
 		selectGroup   := O.selectGroup
+		selectOrder   := O.selectOrder
 
 		O.selectGroup  = []string{}
+		O.selectOrder  = []string{}
 		O.selectFields = "count(distinct "+strings.Join(element, ",")+") as aggs_count"
 
 		total := O.Value("aggs_count")
 
 		O.selectFields = selectFields
 		O.selectGroup  = selectGroup
+		O.selectOrder  = selectOrder
 
 		conv,err := strconv.Atoi(total)
 		if err == nil {
