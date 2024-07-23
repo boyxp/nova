@@ -379,7 +379,7 @@ func TestDelete(t *testing.T) {
 //取得总条数和总页数
 func TestPage(t *testing.T) {
 	O := Model{"goods"}
-	m := O.Limit(5)
+	m := O.Page(1).Limit(10)
 	list  := m.Select()
 	total := m.Total()
 	total_page := m.TotalPage()
