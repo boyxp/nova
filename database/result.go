@@ -8,6 +8,10 @@ type Result struct {
 	fields map[string]string
 }
 
+func (R Result) Zero() *Result {
+	return new(Result)
+}
+
 //返回查询结果切片
 func (R *Result) List() []map[string]string {
 	return R.list
@@ -15,11 +19,15 @@ func (R *Result) List() []map[string]string {
 
 //返回指定列切片
 func (R *Result) Values(field string) []string {
+	res := []string{}
+
+	if len(R.list)==0 {
+		return res
+	}
+
 	if _,ok := R.fields[field];!ok {
 		panic("结果集中不存在指定字段或别名："+field)
 	}
-
-	res := []string{}
 
 	for _,v := range R.list {
 		res = append(res, v[field])
@@ -30,6 +38,12 @@ func (R *Result) Values(field string) []string {
 
 //返回指定列做key指定列做value的map
 func (R *Result) Columns(fields ...string) map[string]string {
+	res := map[string]string{}
+
+	if len(R.list)==0 {
+		return res
+	}
+
 	var key   string
 	var value string
 
@@ -53,12 +67,8 @@ func (R *Result) Columns(fields ...string) map[string]string {
 		panic("结果集中不存在指定字段或别名："+value)
 	}
 
-	res := map[string]string{}
-
-	if len(R.list)>0 {
-		for _, v := range R.list {
-			res[v[key]] = v[value]
-		}
+	for _, v := range R.list {
+		res[v[key]] = v[value]
 	}
 
 	return res
@@ -66,6 +76,12 @@ func (R *Result) Columns(fields ...string) map[string]string {
 
 //返回指定列为key记录为值的map
 func (R *Result) Map(fields ...string) map[string]map[string]string {
+	res := map[string]map[string]string{}
+
+	if len(R.list)==0 {
+		return res
+	}
+
 	var key string
 
 	if(len(fields)==0) {
@@ -78,12 +94,8 @@ func (R *Result) Map(fields ...string) map[string]map[string]string {
 		panic("结果集中不存在指定字段或别名（未指定key时默认主键为key）："+key)
 	}
 
-	res := map[string]map[string]string{}
-
-	if len(R.list)>0 {
-		for _, v := range R.list {
-			res[v[key]] = v
-		}
+	for _, v := range R.list {
+		res[v[key]] = v
 	}
 
 	return res
@@ -91,6 +103,12 @@ func (R *Result) Map(fields ...string) map[string]map[string]string {
 
 //返回指定列为key指定列为值的切片
 func (R *Result) MapList(key string, value string) map[string][]string {
+	res := map[string][]string{}
+
+	if len(R.list)==0 {
+		return res
+	}
+
 	if _,ok_key := R.fields[key];!ok_key {
 		panic("结果集中不存在指定字段或别名："+key)
 	}
@@ -99,15 +117,12 @@ func (R *Result) MapList(key string, value string) map[string][]string {
 		panic("结果集中不存在指定字段或别名："+value)
 	}
 
-	res := map[string][]string{}
 
-	if len(R.list)>0 {
-		for _, v := range R.list {
-			if _, ok := res[v[key]];ok {
-				res[v[key]] = append(res[v[key]], v[value])
-			} else {
-				res[v[key]] = []string{v[value]}
-			}
+	for _, v := range R.list {
+		if _, ok := res[v[key]];ok {
+			res[v[key]] = append(res[v[key]], v[value])
+		} else {
+			res[v[key]] = []string{v[value]}
 		}
 	}
 
@@ -116,11 +131,19 @@ func (R *Result) MapList(key string, value string) map[string][]string {
 
 //返回记录总条数
 func (R *Result) Total() int {
+	if len(R.list)==0 {
+		return 0
+	}
+
 	return R.orm.Total()
 }
 
 //返回记录总页数
 func (R *Result) TotalPage() int {
+	if len(R.list)==0 {
+		return 0
+	}
+
 	return R.orm.TotalPage()
 }
 
@@ -131,6 +154,10 @@ func (R *Result) Empty() bool {
 
 //找到两个结果集的唯一交集key，合并结果集
 func (R *Result) Merge(M *Result) []map[string]string {
+	if len(R.list)==0 {
+		return R.list
+	}
+
 	//查找结果集字段交集
 	fields := M.Fields()
 	keys   := []string{}
@@ -176,6 +203,10 @@ func (R *Result) Fields() map[string]string {
 //walk函数遍历
 func (R *Result) Walk(callback func(v map[string]string) map[string]string ) {
 	tmp := []map[string]string{}
+
+	if len(R.list)==0 {
+		return
+	}
 
 	for _, v := range R.list {
 		v = callback(v)

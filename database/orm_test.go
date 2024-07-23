@@ -550,3 +550,15 @@ func TestResultWalk(t *testing.T) {
 		t.Fail()
 	}
 }
+
+//返回空结果集
+func TestResultZero(t *testing.T) {
+	res := Result{}.Zero()
+	//res := new(Result)
+
+	if res.Empty() {
+		t.Log(res)
+	} else {
+		t.Fail()
+	}
+}
