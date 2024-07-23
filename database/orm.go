@@ -313,7 +313,7 @@ func (O *Orm) Order(field string, sort string) *Orm {
 
 func (O *Orm) Page(page int) *Orm {
 	if page < 1 {
-		panic("页码不应小于1")
+		page = 1
 	}
 
 	O.selectPage = page
@@ -323,7 +323,7 @@ func (O *Orm) Page(page int) *Orm {
 
 func (O *Orm) Limit(limit int) *Orm {
 	if limit < 1 {
-		panic("每页条数不应小于1")
+		limit = 20
 	}
 
 	O.selectLimit = limit
