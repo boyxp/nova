@@ -148,6 +148,21 @@ func (R *Result) Fields() map[string]string {
 	return R.fields
 }
 
+//walk函数遍历
+func (R *Result) Walk(callback func(v map[string]string) map[string]string ) {
+	tmp := []map[string]string{}
+
+	for _, v := range R.list {
+		v = callback(v)
+
+		if v!=nil {
+			tmp = append(tmp, v) 
+		}
+	}
+
+	R.list = tmp
+}
+
 //返回列表分页标准格式响应
 func (R *Result) Response() map[string]any {
 	return map[string]any{

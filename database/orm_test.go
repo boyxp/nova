@@ -518,3 +518,23 @@ func TestResultResponse(t *testing.T) {
 		t.Fail()
 	}
 }
+
+//walk函数
+func TestResultWalk(t *testing.T) {
+	res := Model{"goods"}.Field("name,goods_id").Result()
+	res.Walk(func(v map[string]string) map[string]string {
+		if v["goods_id"] == "2" {
+			return nil
+		}
+
+		return v
+	})
+
+	tmp := res.Map("goods_id")
+
+	if _,ok:=tmp["2"];!ok {
+		t.Log(tmp)
+	} else {
+		t.Fail()
+	}
+}
