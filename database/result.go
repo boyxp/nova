@@ -89,6 +89,31 @@ func (R *Result) Map(fields ...string) map[string]map[string]string {
 	return res
 }
 
+//返回指定列为key指定列为值的切片
+func (R *Result) MapList(key string, value string) map[string][]string {
+	if _,ok_key := R.fields[key];!ok_key {
+		panic("结果集中不存在指定字段或别名："+key)
+	}
+
+	if _,ok_value := R.fields[value];!ok_value {
+		panic("结果集中不存在指定字段或别名："+value)
+	}
+
+	res := map[string][]string{}
+
+	if len(R.list)>0 {
+		for _, v := range R.list {
+			if _, ok := res[v[key]];ok {
+				res[v[key]] = append(res[v[key]], v[value])
+			} else {
+				res[v[key]] = []string{v[value]}
+			}
+		}
+	}
+
+	return res
+}
+
 //返回记录总条数
 func (R *Result) Total() int {
 	return R.orm.Total()

@@ -440,6 +440,18 @@ func TestResultMap(t *testing.T) {
 	}
 }
 
+//返回结果集指定列做key的切片
+func TestResultMapList(t *testing.T) {
+	res := Model{"goods"}.Field("name,category,goods_id").Result()
+	list := res.MapList("category", "name")
+
+	if len(list)>0 {
+		t.Log(list)
+	} else {
+		t.Fail()
+	}
+}
+
 //返回结果集对应请求的总条数
 func TestResultTotal(t *testing.T) {
 	res   := Model{"goods"}.Field("name,goods_id").Result()
