@@ -11,49 +11,51 @@ func Now() time.Time {
 }
 
 func Strtotime(str string) time.Time {
-    reg := regexp.MustCompile(`([+-])([0-9]+)\s+(year|month|day|hour|minute|second)`)
-    if reg == nil {
-        panic("MustCompile err")
-    }
+	reg := regexp.MustCompile(`([+-])([0-9]+)\s*(year|month|day|hour|minute|second|week)`)
+	if reg == nil {
+		panic("MustCompile err")
+	}
 
-    result := reg.FindAllStringSubmatch(str, -1)
-    if len(result)>0 {
-        base := time.Unix(time.Now().Unix(), 0)
-        for _, match := range result {
-                count, _ := strconv.Atoi(match[2])
-                if match[1]=="-" {
-                        count = 0 - count
-                }
+	result := reg.FindAllStringSubmatch(str, -1)
+	if len(result)>0 {
+		base := time.Unix(time.Now().Unix(), 0)
+		for _, match := range result {
+			count, _ := strconv.Atoi(match[2])
+			if match[1]=="-" {
+				count = 0 - count
+			}
 
-                switch match[3] {
-                    case "year":
-                            base = AddDate(base, count, 0, 0)
-                    case "month":
-                            base = AddDate(base, 0, count, 0)
-                    case "day":
-                            base = AddDate(base, 0, 0, count)
-                    case "hour":
-                            base = base.Add(time.Duration(count) * time.Hour)
-                    case "minute":
-                            base = base.Add(time.Duration(count) * time.Minute)
-                    case "second":
-                            base = base.Add(time.Duration(count) * time.Second)
-                }
-        }
+			switch match[3] {
+				case "year":
+							base = addDate(base, count, 0, 0)
+				case "month":
+							base = addDate(base, 0, count, 0)
+				case "day":
+							base = addDate(base, 0, 0, count)
+				case "week":
+							base = addDate(base, 0, 0, count*7)
+				case "hour":
+							base = base.Add(time.Duration(count) * time.Hour)
+				case "minute":
+							base = base.Add(time.Duration(count) * time.Minute)
+				case "second":
+							base = base.Add(time.Duration(count) * time.Second)
+			}
+		}
 
-        return base
-    }
+		return base
+	}
 
 	u, err := strtotime.Parse(str+" +0800", time.Now().Unix())
-    if err != nil {
-    	panic("strtotime时间格式化失败:"+str)
-    }
+	if err != nil {
+		panic("strtotime时间格式化失败:"+str)
+	}
 
-    return time.Unix(u,0)
+	return time.Unix(u,0)
 }
 
 //https://libuba.com/2021/01/08/golan-adddate-%E4%B8%B4%E7%95%8C%E5%9D%91/
-func AddDate(t time.Time, year int, month int, day int) time.Time {
+func addDate(t time.Time, year int, month int, day int) time.Time {
 	targetDate := t.AddDate(year, month, -t.Day()+1)
 	targetDay  := targetDate.AddDate(0, 1, -1).Day()
 
@@ -74,16 +76,21 @@ func Date(format string, _time ...time.Time) string {
 		currentTime = _time[0]
 	}
 
-	if format=="Y-m-d H:i:s" {
-		return currentTime.Format("2006-01-02 15:04:05")
-	}
-
-	if format=="Y-m-d" {
-		return currentTime.Format("2006-01-02")
-	}
-
-	if format=="H:i:s" {
-		return currentTime.Format("15:04:05")
+	switch format {
+		case "Y-m-d H:i:s":
+							return currentTime.Format("2006-01-02 15:04:05")
+		case "Y-m-d"      :
+							return currentTime.Format("2006-01-02")
+		case "Y-m"        :
+							return currentTime.Format("2006-01")
+		case "Y"          :
+							return currentTime.Format("2006")
+		case "H:i:s"      :
+							return currentTime.Format("15:04:05")
+		case "H:i"      :
+							return currentTime.Format("15:04")
+		case "H"      :
+							return currentTime.Format("15")
 	}
 
 	for i:=0;i<len(format);i++ {
@@ -110,26 +117,26 @@ func Date(format string, _time ...time.Time) string {
 					format = strings.Replace(format, "l", currentTime.Format("Monday"), 1)
 			case "N":
 					var weekDayMap = map[string]string {
-					    "Monday":    "1",
-					    "Tuesday":   "2",
+					    "Monday"   : "1",
+					    "Tuesday"  : "2",
 					    "Wednesday": "3",
-					    "Thursday":  "4",
-					    "Friday":    "5",
-				    	"Saturday":  "6",
-			    		"Sunday":    "7",
+					    "Thursday" : "4",
+					    "Friday"   : "5",
+				    	"Saturday" : "6",
+			    		"Sunday"   : "7",
 					}
 
 					var weekDay = currentTime.Format("Monday")
 					format = strings.Replace(format, "N", weekDayMap[weekDay], 1)
 			case "w":
 					var weekDayMap = map[string]string {
-					    "Monday":    "0",
-					    "Tuesday":   "1",
+					    "Monday"   : "0",
+					    "Tuesday"  : "1",
 					    "Wednesday": "2",
-					    "Thursday":  "3",
-					    "Friday":    "4",
-				    	"Saturday":  "5",
-			    		"Sunday":    "6",
+					    "Thursday" : "3",
+					    "Friday"   : "4",
+				    	"Saturday" : "5",
+			    		"Sunday"   : "6",
 					}
 
 					var weekDay = currentTime.Format("Monday")
@@ -165,14 +172,20 @@ func Readable(timestamp string) string {
 
 	diff := now.Sub(curr).Seconds()
 
-	if diff>86400 {
+	if diff>7*86400 {
 		return timestamp
 	}
 
 	str := now.Sub(curr).String()
 
 	if strings.Contains(str, "h") {
-		return str[0:strings.Index(str, "h")]+"小时前"
+		h := str[0:strings.Index(str, "h")]
+		n, _ := strconv.Atoi(h)
+		if n<24 {
+			return h+"小时前"
+		}
+
+		return strconv.Itoa(n/24)+"天前"
 	}
 
 	if strings.Contains(str, "m") {
