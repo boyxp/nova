@@ -117,15 +117,19 @@ func TestSelectGtEq(t *testing.T) {
 
 //多条件查询
 func TestSelectMulti(t *testing.T) {
-	O := Model{"goods"}
-	rows := O.Where(map[string]interface{}{
+	rows1 := Model{"goods"}.Where(map[string]interface{}{
 		"category":"服装",
 		"name":[]interface{}{"is not", "null"},
 		"price":[]interface{}{"BETWEEN", []string{"200","400"}},
 	}).Select()
 
-	if len(rows)==3 {
-		t.Log(rows)
+	rows2 := Model{"goods"}.Where("category","服装").
+					And("name", "is not", "null").
+					And("price", "BETWEEN", []string{"200","400"}).
+					Select()
+
+	if len(rows1)==3 && len(rows2)==3 {
+		t.Log(rows1, rows2)
 	} else {
 		t.Fail()
 	}
