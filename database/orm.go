@@ -958,11 +958,7 @@ func (O *Orm) initScheme(table string) {
         		panic(err.Error())
     		}
 
-			if rowNull=="NO" && rowDefault==nil {
-				scheme[rowField] = "NOTNULL"
-			} else {
-				scheme[rowField] = "NULL"
-			}
+			scheme[rowField] = rowType
 
 			if rowKey=="PRI" {
 				primary = rowField
