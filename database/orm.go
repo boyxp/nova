@@ -257,6 +257,10 @@ func (O *Orm) Where(conds ...interface{}) *Orm {
 	return O
 }
 
+func (O *Orm) And(conds ...interface{}) *Orm {
+	return O.Where(conds...)
+}
+
 func (O *Orm) Group(fields ...string) *Orm {
 	for _, field := range fields {
 		_, ok := O.scheme[field]
