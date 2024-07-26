@@ -3,7 +3,7 @@ module api
 go 1.20
 
 require (
-	github.com/boyxp/nova v0.0.0-20240715052301-70c3a4cbcb31
+	github.com/boyxp/nova v0.0.0-20240723132432-a4ee69c78e84
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/joho/godotenv v1.5.1
 )
