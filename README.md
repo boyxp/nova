@@ -85,6 +85,10 @@ sh manage.sh reload
 ```bash
 sh manage.sh stop
 ```
+更新代码并重启
+```bash
+sh manage.sh upgrade
+```
 
 ### 创建控制器
 进入 controller 目录，创建struct，并将struct注册到路由
