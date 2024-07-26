@@ -36,7 +36,7 @@ func main() {
 }
 
 type Hello struct {}
-func (h Hello) Hi(name string) map[string]string {
+func (h *Hello) Hi(name string) map[string]string {
    return map[string]string{"name":"hello "+name}
 }
 ```
@@ -98,7 +98,7 @@ func init() {
 }
 
 type Hello struct {}
-func (h Hello) Hi(name string) map[string]string {
+func (h *Hello) Hi(name string) map[string]string {
 	return map[string]string{"name":"hello "+name}
 }
 ```
