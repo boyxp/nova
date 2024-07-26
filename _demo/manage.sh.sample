@@ -7,19 +7,19 @@ SOURCE=main
 
 pid() {
 	if [ -f "./pid" ];then
-    	PID=$(cat "./pid")
-    	EXIST=$(ps aux | awk '{print $2}' | grep -w $PID)
+		PID=$(cat "./pid")
+		EXIST=$(ps aux | awk '{print $2}' | grep -w $PID)
 		if [ $EXIST ];then
 			echo $PID
 			return
 		fi
 	fi
 
-    echo 0
+	echo 0
 }
 
 build() {
-	go build -o $PROGRAM.$host $SOURCE.go 
+	go build -o $PROGRAM.$host $SOURCE.go
 	if [ $? -ne 0 ];then
 		echo "\033[31m build失败，启动终止 \033[0m"
 		exit 1
@@ -30,13 +30,14 @@ build() {
 }
 
 if [ $# -eq 0 ];then
-    echo "Usage: $0 {start|stop|status|restart}"
+    echo "Usage: $0 {start|stop|status|restart|upgrade}"
+    sh $0 status
     exit 0
 fi
 
 
 case "$1" in
-	status)
+	status|s)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
 			echo "\033[32m 运行中...pid:$PID \033[0m" 
@@ -106,7 +107,7 @@ case "$1" in
 			exit 1
 		fi
 	;;
-	reload)
+	reload|l)
 		PID=$(pid)
 		if [ $PID -gt 0 ];then
 			echo "重新加载配置中...原pid:$PID"
@@ -123,6 +124,24 @@ case "$1" in
 			echo "\033[33m 未运行 \033[0m"
 			exit 1
 		fi
+	;;
+	upgrade|u)
+		output=$(git pull 2>&1)
+		if [[ $output == *已经* ]]
+		then
+			echo "\033[33m 最近没有改动 \033[0m"
+			exit 1
+		fi
+
+		if [[ $output == *up-to-date* ]]
+		then
+			echo "\033[33m 最近没有改动 \033[0m"
+			exit 1
+		fi
+
+		echo -e "$output"
+
+		sh $0 r
 	;;
 	*)
     	echo "Usage: $0 {start|stop|status|restart}"
