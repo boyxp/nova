@@ -40,6 +40,11 @@ func Listen(port ...string) *App {
 	return &App{Port:Port, Request:&request.Form{}, Response:&response.Json{}}
 }
 
+func Register(controller interface{}) bool {
+	return router.Register(controller)
+}
+
+
 type App struct {
 	Port string
 	Request request.Interface
