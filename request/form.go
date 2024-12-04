@@ -56,9 +56,8 @@ func (F *Form) Parse(r *http.Request)map[string]string {
                   params[k] = v
 
             } else {
-               name   := strings.Replace(strings.Replace(part.FileName(), "..", "_", -1), ":", "_", -1)
                k      := part.FormName()
-               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+"_"+name
+               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+".nova.uploaded"
                dst, _ := os.Create(v)
                defer dst.Close()
                io.Copy(dst, part)
@@ -66,12 +65,15 @@ func (F *Form) Parse(r *http.Request)map[string]string {
                if strings.Contains(k, "[") {
                   rk := k[:len(k)-2]
                   if _, ok := params[rk];ok {
-                     params[rk] = params[rk]+":"+v
+                     params[rk] = params[rk]+","+v
+                     params[rk+"_name"] = params[rk+"_name"]+","+part.FileName()
                   } else {
                      params[rk] = v
+                     params[rk+"_name"] = part.FileName()
                   }
                } else {
                   params[k] = v
+                  params[k+"_name"] = part.FileName()
                }
             }
          }
