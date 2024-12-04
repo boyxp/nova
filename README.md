@@ -28,9 +28,10 @@ go mod init api
 package main
 
 import "github.com/boyxp/nova"
+import "github.com/boyxp/nova/router"
 
 func main() {
-   nova.Register(Hello{})
+   router.Register(Hello{})
    nova.Listen("9800").Run()
 }
 
