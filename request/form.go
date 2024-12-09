@@ -57,7 +57,7 @@ func (F *Form) Parse(r *http.Request)map[string]string {
 
             } else {
                k      := part.FormName()
-               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+".nova.uploaded"
+               v      := "/tmp/"+strconv.FormatInt(time.Now().UnixNano(), 10)+".nova.upload"
                dst, _ := os.Create(v)
                defer dst.Close()
                io.Copy(dst, part)
