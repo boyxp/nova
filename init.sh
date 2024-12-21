@@ -19,7 +19,7 @@ fi
 sleep 1
 
 echo "\n2/5 正在拷贝项目结构文件...\n"
-cp -r /tmp/nova/_demo/ .
+cp -r /tmp/nova/_demo/* .
 
 echo "3/5 正在重命名模版文件...\n"
 mv manage.sh.sample manage.sh
