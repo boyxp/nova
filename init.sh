@@ -30,6 +30,7 @@ fi
 sleep 1
 
 tip "\n2/5 正在拷贝项目结构文件...\n"
+
 cp -r /tmp/nova/_demo/* .
 
 tip "3/5 正在重命名模版文件...\n"
