@@ -22,6 +22,8 @@ This document describes a lightweight API framework based on Golang, designed to
 *   Middleware support: Supports the use of middleware to handle pre- and post-request logic, such as logging, authentication, authorization, etc., improving code reusability and maintainability.
 *   Loosely coupled modular design: Adopts a modular design, with independent modules that are easy to expand and maintain.
 
+
+
 ## Quick Start
 
 1. **Initialize a New Go Module:**
@@ -90,7 +92,44 @@ To initialize a complete project structure and manage the application, follow th
    curl -s https://raw.githubusercontent.com/boyxp/nova/master/init.sh | sh
    ```
 
-### Process Management:
+### Creating a Controller
+
+   Create a new controller in the `controller` directory and register it with the router.
+
+   ```go
+   package controller
+
+   import "github.com/boyxp/nova/router"
+
+   // Initialize and register the controller
+   func init() {
+       router.Register(Hello{})
+   }
+
+   // Define the controller struct
+   type Hello struct {}
+
+   // Define a method to handle requests
+   func (h *Hello) Hi(name string) map[string]string {
+       return map[string]string{"name": "hello " + name}
+   }
+   ```
+
+### Start the Application
+   ```bash
+   sh manage.sh start
+   ```
+
+### Test the API
+   Use `curl` to test the new controller's endpoint:
+
+   ```bash
+   curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
+   ```
+
+
+
+## Process Management:
    Use the provided `manage.sh` script to manage the application process.
 
    - **Start Process:**
@@ -123,45 +162,7 @@ To initialize a complete project structure and manage the application, follow th
      sh manage.sh upgrade
      ```
 
-### Creating a Controller
-
-1. **Define a Controller:**
-   Create a new controller in the `controller` directory and register it with the router.
-
-   ```go
-   package controller
-
-   import "github.com/boyxp/nova/router"
-
-   // Initialize and register the controller
-   func init() {
-       router.Register(Hello{})
-   }
-
-   // Define the controller struct
-   type Hello struct {}
-
-   // Define a method to handle requests
-   func (h *Hello) Hi(name string) map[string]string {
-       return map[string]string{"name": "hello " + name}
-   }
-   ```
-
-2. **Restart the Application:**
-   Restart the process to apply changes.
-
-   ```bash
-   sh manage.sh restart
-   ```
-
-3. **Test the API:**
-   Use `curl` to test the new controller's endpoint:
-
-   ```bash
-   curl -X POST -d 'name=eve' 127.0.0.1:9800/hello/hi
-   ```
-
-### Additional Configuration
+## Additional Configuration
 
 - **Cookie Settings:**
   Configure cookie settings in your environment variables (e.g., `cookie.HttpOnly`, `cookie.Secure`, `cookie.Path`, `cookie.Domain`, `cookie.MaxAge`).
